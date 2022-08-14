@@ -1,0 +1,65 @@
+DCNv2_base:
+    model: DCNv2
+    dataset_id: TBD
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    model_structure: parallel
+    use_low_rank_mixture: False
+    low_rank: 32
+    num_experts: 4
+    learning_rate: 1.0e-3
+    embedding_regularizer: 0
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    stacked_dnn_hidden_units: [500, 500, 500]
+    parallel_dnn_hidden_units: [500, 500, 500]
+    dnn_activations: relu
+    num_cross_layers: 3
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+
+
+DCN_v2_sub_base_only_user_min_1_baseline:
+    model: DCNv2
+    dataset_id: taobao_x1_sub_base_only_user_min_1_baseline
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    model_structure: parallel
+    use_low_rank_mixture: False
+    low_rank: 32
+    num_experts: 4
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    stacked_dnn_hidden_units:  [256, 128, 64]
+    parallel_dnn_hidden_units:  [256, 128, 64]
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    num_cross_layers: 3
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
