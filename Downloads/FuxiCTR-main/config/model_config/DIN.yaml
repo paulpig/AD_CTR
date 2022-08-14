@@ -1,0 +1,1763 @@
+DIN_base:
+    model: DIN
+    dataset_id: taobao_x1_seq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_base_v2:
+    model: DIN
+    dataset_id: taobao_x1_base
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+DIN_base_true:
+    model: DIN
+    dataset_id: taobao_x1_seq_true
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 16
+    dnn_hidden_units: [500, 200, 1000]
+    dnn_activations: relu
+    attention_hidden_units: [64, 128, 32]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0.2
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_base_true_no_share:
+    model: DIN
+    dataset_id: taobao_x1_seq_true_no_share
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 16
+    dnn_hidden_units: [500, 500, 500]
+    dnn_activations: relu
+    # attention_hidden_units: [64, 128, 32]
+    attention_hidden_units: [128]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0.2
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    patience: 2
+    use_hdf5: true
+    verbose: 1
+    workers: 3
+
+DIN_no_seq_base_true:
+    model: DIN
+    dataset_id: taobao_x1_no_seq_true
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 16
+    dnn_hidden_units: [500, 200, 1000]
+    dnn_activations: relu
+    attention_hidden_units: [64, 128, 32]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0.2
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+DIN_base_cate:
+    model: DIN
+    dataset_id: taobao_x1_seq_add_cate
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128]
+    dnn_activations: relu
+    attention_hidden_units: [64, 16]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: [adgroup_id, cate_id]
+    din_sequence_field: [click_sequence, click_cate_sequence]
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_no_seq:
+    model: DIN
+    dataset_id: taobao_x1_no_seq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+
+DIN_sub_base:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_no_seq:
+    model: DIN
+    dataset_id: taobao_x1_sub_no_seq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+DIN_sub_base_MM:
+    model: DIN_SUB
+    dataset_id: taobao_x1_both_seqs
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: [adgroup_id, userid]
+    din_sequence_field: [click_sequence, click_user_sequence]
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_seq_rm_self:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_rm_self
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_seq_rm_self_rm_non_freq:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_rm_self_rm_non_freq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_no_sub_seq_rm_self_rm_non_freq:
+    model: DIN
+    dataset_id: taobao_x1_no_sub_seq_rm_self_rm_non_freq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+DIN_no_all_seq_rm_self_rm_non_freq:
+    model: DIN
+    dataset_id: taobao_x1_no_all_seq_rm_self_rm_non_freq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+DIN_all_seq_rm_self_rm_non_freq:
+    model: DIN
+    dataset_id: taobao_x1_all_sub_seq_rm_self_rm_non_freq
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+
+DIN_sub_seq_norm:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_rm_self
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_no_seq_rm_self:
+    model: DIN
+    dataset_id: taobao_x1_sub_no_seq_rm_self
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+DIN_sub_seq_norm:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_norm
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: adgroup_id
+    din_sequence_field: click_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_seq_norm_add_cate:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_norm_add_cate
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 40
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: [['adgroup_id', 'cate_id']]
+    din_sequence_field: [['click_sequence', 'click_cate_sequence']]
+    # din_target_field: [(adgroup_id, cate_id)]
+    # din_sequence_field: [(click_sequence, click_cate_sequence)]
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_MM_rm_self:
+    model: DIN_SUB
+    dataset_id: taobao_x1_both_seqs_rm_self
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: [adgroup_id, userid]
+    din_sequence_field: [click_sequence, click_user_sequence]
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+
+DIN_sub_base_only_user:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_only_user
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_base_only_user_min_1:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_only_user_min_1
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_base_no_user_min_1:
+    model: DIN
+    dataset_id: taobao_x1_no_sub_seq_only_user_min_1
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+DIN_sub_base_only_user_min_1_pretrain:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_only_user_min_1_pretrain
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_min_1_pretrain_total:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_1_pretrain_total
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 0
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_min_1_pretrain_total_epoch_20:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_1_pretrain_total_epoch_20
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_min_10_pretrain_output_total_epoch_20_add_norm:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_10_pretrain_total_epoch_20_add_norm
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_min_10_pretrain_output_total_epoch_20_add_norm:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_10_pretrain_total_epoch_20_add_norm
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_min_1_pretrain_output_total_epoch_20_lightgcn_right_mat:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_10_pretrain_total_epoch_20_lightgcn_right_mat
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+
+DIN_sub_base_only_user_min_1_pretrain_output_total_epoch_20:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_min_1_pretrain_output_total_epoch_20
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_pretrain:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_only_user_load_user_pretrain
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_base_only_user_500:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_only_user_500
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+
+DIN_sub_base_only_user_200_meta:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    # din_target_field: ['userid', 'adgroup_id']
+    # din_sequence_field: ['click_user_sequence', 'click_user_sequence']
+    din_target_field: 'userid'
+    din_sequence_field: 'click_user_sequence'
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_base_only_user_200_meta_load_pretrain:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_seq_only_user_load_user_pretrain
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    # din_target_field: ['userid', 'adgroup_id']
+    # din_sequence_field: ['click_user_sequence', 'click_user_sequence']
+    din_target_field: 'userid'
+    din_sequence_field: 'click_user_sequence'
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+
+DIN_sub_base_no_user:
+    model: DIN
+    dataset_id: taobao_x1_sub_seq_no_user
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer: 1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+
+
+# 此处迭代模型
+DIN_sub_base_only_user_min_10_baseline:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_baseline
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+
+DIN_sub_base_only_user_min_1_baseline:
+    model: DIN
+    # model: DCN
+    dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain
+    # dataset_id: taobao_x1_sub_seq_only_user
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-5
+    net_regularizer: 1.0e-5
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    # batch_norm: True
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    # embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+
+
+DIN_sub_base_only_user_min_1_baseline_1_day:
+    model: DIN
+    # model: DCN
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain
+    # dataset_id: taobao_x1_sub_seq_only_user
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-5
+    net_regularizer: 1.0e-5
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    # batch_norm: True
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    # embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+
+DIN_sub_base_only_user_min_10_add_ext_data:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_add_ext_data
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+
+
+DIN_sub_base_only_user_min_10_attention_mechanism:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    use_attention: True
+
+
+DIN_sub_base_only_user_min_10_meta:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    use_meta: True
+
+
+DIN_sub_base_only_user_min_10_double_meta:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    use_meta: True
+    use_pretrain: True
+
+
+DIN_sub_base_only_user_min_10_double_meta_custom_user:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    use_meta: True
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+
+DIN_sub_base_only_user_min_10_double_meta_custom_user_only_pos:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_only_pos
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: True
+    use_meta: True
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+    embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+
+#测试CTR模型
+DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    # embedding_regularizer:  1.0e-6
+    # net_regularizer: 0
+    embedding_regularizer:  1.0e-5
+    net_regularizer: 1.0e-5
+    batch_size: 10000
+    embedding_dim: 10
+    # dnn_hidden_units: [32, 32, 32]
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+    embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+    max_gradient_norm: 0.1
+
+
+
+#测试CTR模型
+DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_his_clk:
+    # model: DIN_Meta_HIS
+    model: DIN_Meta
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    # embedding_regularizer:  5.0e-5
+    embedding_regularizer: 1.0e-5
+    net_regularizer: 1.0e-5
+    # embedding_regularizer:  1.0e-6
+    # net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    # batch_norm: True
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    # monitor: {'AUC': 1, 'logloss': -1}
+    monitor: {'AUC': 1 }
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    # use_pretrain: False
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+    # embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+    graph_embedding_dim: 10
+
+
+
+
+DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_his_clk_tmp:
+    model: DIN_Meta_HIS
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk_tmp
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+    embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+
+
+
+
+#生成预训练的表征;
+DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_extend_users:
+    model: DIN_Meta
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_extend_users
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-6
+    net_regularizer: 0
+    batch_size: 10000
+    embedding_dim: 10
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    use_pretrain: True
+    concat_other_feat: False
+    use_attention: False
+
+
+
+DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint:
+    model: DIN_Meta_JOINT
+    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-5
+    # net_regularizer: 0
+    # embedding_regularizer: 1.0e-5
+    net_regularizer: 1.0e-5
+    batch_size: 10000
+    embedding_dim: 10
+    # dnn_hidden_units: [32, 32, 32]
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    # monitor: {'AUC': 1, 'logloss': -1}
+    monitor: {'AUC': 1}
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    use_pretrain: False
+    concat_other_feat: False
+    use_attention: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+    # embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+    # max_gradient_norm: 0.1
+    iterations: 3
+    add_norm: True
+    # encoder_model: 'disengcn'
+    encoder_model: 'lightgcn'
+    # encoder_model: 'mlp'
+    channels: 2
+    graph_layer: 2
+    bpr_batch_size: 8096
+    weight_decay: 1.0e-5
+    # graph_embedding_dim: 64
+    graph_embedding_dim: 10
+    epoch_pre: 0
+
+
+# DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint_1_day:
+DIN_1_day_custom_user_only_pos_graph_joint_train:
+    model: DIN_Meta_JOINT
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    dataset_id: taobao_x1_1_day_custom_user_only_pos_graph
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    learning_rate: 1.0e-3
+    embedding_regularizer:  1.0e-5
+    # embedding_regularizer: 1.0e-5
+    net_regularizer: 1.0e-5
+    batch_size: 10000
+    embedding_dim: 10
+    # dnn_hidden_units: [32, 32, 32]
+    dnn_hidden_units: [256, 128, 64]
+    dnn_activations: relu
+    attention_hidden_units: [80, 40]
+    attention_hidden_activations: "Dice"
+    attention_output_activation: null
+    attention_dropout: 0
+    din_target_field: userid
+    din_sequence_field: click_user_sequence
+    net_dropout: 0
+    batch_norm: False
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    # monitor: {'AUC': 1, 'logloss': -1}
+    monitor: {'AUC': 1}
+    monitor_mode: 'max'
+    add_sequence: False
+    use_meta: True
+    use_pretrain: False
+    concat_other_feat: False
+    use_attention: False
+    # embedding_initializer: "torch.nn.init.normal_(std=1e-4)"
+    # embedding_initializer: "torch.nn.init.uniform_(-0.1, 0.1)"
+    # max_gradient_norm: 0.1
+    iterations: 3
+    add_norm: True
+    # encoder_model: 'disengcn'
+    encoder_model: 'lightgcn'
+    # encoder_model: 'mlp'
+    # encoder_model: 'embedding'
+    channels: 2
+    graph_layer: 2
+    bpr_batch_size: 8096
+    weight_decay: 1.0e-5
+    # graph_embedding_dim: 64
+    graph_embedding_dim: 10
+    epoch_pre: 30
+    cl_w: 1.0e-4
+    add_vae: False
+    add_side_info: True
+    # cl_w: 0.0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# DIN_sub_base_only_user_min_10_double_meta_custom_user_generate_pretrain_emb:
+#     model: DIN_Meta
+#     dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb
+#     loss: 'binary_crossentropy'
+#     metrics: ['logloss', 'AUC']
+#     task: binary_classification
+#     optimizer: adam
+#     learning_rate: 1.0e-3
+#     embedding_regularizer:  1.0e-6
+#     net_regularizer: 0
+#     batch_size: 10000
+#     embedding_dim: 10
+#     dnn_hidden_units: [256, 128, 64]
+#     dnn_activations: relu
+#     attention_hidden_units: [80, 40]
+#     attention_hidden_activations: "Dice"
+#     attention_output_activation: null
+#     attention_dropout: 0
+#     din_target_field: userid
+#     din_sequence_field: click_user_sequence
+#     net_dropout: 0
+#     batch_norm: False
+#     epochs: 100
+#     shuffle: True
+#     seed: 2019
+#     monitor: {'AUC': 1, 'logloss': -1}
+#     monitor_mode: 'max'
+#     add_sequence: True
+#     use_meta: True
+#     use_pretrain: True
+#     concat_other_feat: False
+#     use_attention: False
+
+# DIN_sub_base_only_user_min_10_double_meta_custom_user_generate_pretrain_emb_pos_only:
+#     model: DIN_Meta
+#     dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb_pos_only
+#     loss: 'binary_crossentropy'
+#     metrics: ['logloss', 'AUC']
+#     task: binary_classification
+#     optimizer: adam
+#     learning_rate: 1.0e-3
+#     embedding_regularizer:  1.0e-6
+#     net_regularizer: 0
+#     batch_size: 10000
+#     embedding_dim: 10
+#     dnn_hidden_units: [256, 128, 64]
+#     dnn_activations: relu
+#     attention_hidden_units: [80, 40]
+#     attention_hidden_activations: "Dice"
+#     attention_output_activation: null
+#     attention_dropout: 0
+#     din_target_field: userid
+#     din_sequence_field: click_user_sequence
+#     net_dropout: 0
+#     batch_norm: False
+#     epochs: 100
+#     shuffle: True
+#     seed: 2019
+#     monitor: {'AUC': 1, 'logloss': -1}
+#     monitor_mode: 'max'
+#     add_sequence: False
+#     use_meta: True
+#     use_pretrain: True
+#     concat_other_feat: False
+#     use_attention: False
+
+
+# DIN_sub_base_only_user_min_10_double_meta_custom_user_generate_pretrain_emb_pos_only_extend_users:
+#     model: DIN_Meta
+#     dataset_id: taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb_pos_only_extend_users
+#     loss: 'binary_crossentropy'
+#     metrics: ['logloss', 'AUC']
+#     task: binary_classification
+#     optimizer: adam
+#     learning_rate: 1.0e-3
+#     embedding_regularizer:  1.0e-6
+#     net_regularizer: 0
+#     batch_size: 10000
+#     embedding_dim: 10
+#     dnn_hidden_units: [256, 128, 64]
+#     dnn_activations: relu
+#     attention_hidden_units: [80, 40]
+#     attention_hidden_activations: "Dice"
+#     attention_output_activation: null
+#     attention_dropout: 0
+#     din_target_field: userid
+#     din_sequence_field: click_user_sequence
+#     net_dropout: 0
+#     batch_norm: False
+#     epochs: 100
+#     shuffle: True
+#     seed: 2019
+#     monitor: {'AUC': 1, 'logloss': -1}
+#     monitor_mode: 'max'
+#     add_sequence: True
+#     use_meta: True
+#     use_pretrain: True
+#     concat_other_feat: False
+#     use_attention: False
