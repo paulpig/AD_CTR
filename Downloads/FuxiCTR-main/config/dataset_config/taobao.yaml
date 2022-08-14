@@ -826,7 +826,8 @@ taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_extend_users:
 
 
 
-taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day:
+# taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day:
+taobao_x1_1_day_custom_user_only_pos_graph:
     data_root: ../data/
     data_format: csv
     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true_1_day.csv

@@ -6,6 +6,7 @@ from torch.autograd import Variable
 
 import numpy as np
 import pandas as pd
+import math
 
 class VAE(nn.Module):
 
@@ -18,14 +19,16 @@ class VAE(nn.Module):
         self.h_dim = h_dim
         self.embed_size= embed_size
         self.device = device
-
+        self.stdv = 1.0 / math.sqrt(embed_size)
+        # stdv = 1.0 / self.emb_size
         def init_weights(m):
             if isinstance(m, nn.Linear):
                 # nn.init.xavier_uniform(m.weight)
-                nn.init.normal_(m.weight, std=1.e-4)
+                # nn.init.normal_(m.weight, std=1.e-4)
+                nn.init.uniform_(m.weight, -self.stdv, self.stdv)
                 if m.bias is not None:
                     nn.init.constant(m.bias, 0)
-
+        
         # =============================== Q(z|X) ======================================
         self.dense_xh = nn.Linear(X_dim, h_dim)
         init_weights(self.dense_xh)

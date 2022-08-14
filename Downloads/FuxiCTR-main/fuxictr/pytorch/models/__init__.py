@@ -32,7 +32,8 @@ from .DIN_v2 import DIN_SUB
 # from .DIN_meta_7_22_best import DIN_Meta
 from .DIN_meta import DIN_Meta_HIS
 # from .DIN_meta_7_31_bak import DIN_Meta
-from .DIN_meta_7_31_bak import DIN_Meta_JOINT
+# from .DIN_meta_7_31_bak import DIN_Meta_JOINT
+from .DIN_meta_8_11 import DIN_Meta_JOINT
 # from .DIN_meta_opt_v1 import DIN_Meta
 from .DIN_meta_opt import DIN_Meta
 from .DeepIM import DeepIM
@@ -59,6 +60,7 @@ from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3 import HyperGraphCustomBi
 from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v4 import HyperGraphCustomBipartiteDisenGATVAEV4
 from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_ctr_obj import HyperGraphCustomBipartiteDisenGATVAEV3CTRObj
 from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_same_idx import HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx
+from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_same_idx_hypergraph import HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph
 
 
 

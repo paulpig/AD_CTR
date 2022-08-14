@@ -96,8 +96,8 @@ if __name__ == '__main__':
     # pretrain model;
     # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3"
     # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObj"
-    # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx"
-    model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph"
+    model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx"
+    # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph"
     
     encoder_model_pre = params['encoder_model']
     # model_class = getattr(models, 'HyperGraph')
@@ -105,8 +105,7 @@ if __name__ == '__main__':
     model_pre = model_class(gpu=args['gpu'], graph_layer=params['graph_layer'],
                                     learning_rate=params['learning_rate'], graph_embedding_dim=params['graph_embedding_dim'],
                                     bpr_batch_size=params['bpr_batch_size'], weight_decay=params['weight_decay'], epoch_pre=params['epoch_pre'],
-                                    iterations=params['iterations'], add_norm=params['add_norm'], channels=params['channels'],cl_w=params['cl_w'],
-                                    add_vae=params['add_vae'])
+                                    iterations=params['iterations'], add_norm=params['add_norm'], channels=params['channels'],cl_w=params['cl_w'])
     # model = model_class(feature_map, **params)
     # print number of parameters used in model
     model_pre.count_parameters()

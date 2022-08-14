@@ -26,7 +26,7 @@ torch.backends.cudnn.enabled = True
 torch.backends.cudnn.benchmark = True
 
 
-class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
+class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
     def __init__(self,
                 #  adj_user_mat,
                  gpu=-1,
@@ -40,14 +40,16 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
                  iterations=1,
                  add_norm=False,
                  channels=2,
-                 cl_w=1.0e-5):
-        super(HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx, self).__init__()
+                 cl_w=1.0e-5,
+                 add_vae=False):
+        super(HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph, self).__init__()
         
         # parameters
         self.emb_size = graph_embedding_dim
         self.layers = graph_layer
         # self.dataset = datasets
         self.cl_w = cl_w
+        self.device = get_device(gpu)
        
         # path_origin = "../data/Taobao/taobao_ori/u_c_pos_mat_new_idx.npz" #3 day train data
         path_origin = "../data/Taobao/taobao_ori/u_c_pos_mat_new_idx_1_day.npz" #3 day train data
@@ -69,24 +71,26 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # self.path_pretrain_user_emb_path = "../data/Taobao/taobao_ori/u_c_pos_emb_new_idx.h5" # 3 days
         self.path_pretrain_user_emb_path = "../data/Taobao/taobao_ori/u_c_pos_emb_new_idx_1_day.h5" # 1 day
         # 这个路径不要变;
-        
-        # path_v2 = "../data/Taobao/taobao_ori/user_id_Item_id_pre_adj_mat_item2item.npz" #与物品相关的, 暂时不考虑;
-        # self.adj_user_mat = self.normalizeAdj(self.adj_mat, path) #(user, user)
-        # pdb.set_trace()
-        # self.countIndepentHyperEdgeNum() #统计存在多少节点是孤立的;
 
-        # with open(self.path_dict_path, 'rb') as r_f:
-        #     self.userAt2id, self.customer2id = pickle.load(r_f)
-        
-        # with open(self.path_dict_path_ori_user_item_2_ids, 'rb') as r_f:
-        #     user2id_tmp, item2id_tmp = pickle.load(r_f)
+        # user-attribute hypergraph;
+        # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day.npz"
+        self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq.npz"
+        self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq.npz"
+        self.u_at_adj_mat = sp.load_npz(self.u_at_hypergraph_path)
+        self.u_at_voc_len, _ = self.u_at_adj_mat.get_shape()
+        self.u_at_adj_norm_mat = self.get_ui_bipartite_adj_mat(self.u_at_adj_mat, 
+                                                                self.save_pre_norm_u_at_hypergraph_path, 
+                                                                user_voc=self.user_voc_len,
+                                                                item_voc=self.u_at_voc_len,
+                                                                add_self=True) #(user+item, user+item)
 
-        # pdb.set_trace()
-        
-        # [item[0].strip().split("_")[1] for item in self.userAt2id.items() if item[1] == 11]
-        # read train_data: user: item_list
         self.target_user_list, self.pos_items_list = self.generate_train_data()
         self.t_c_list, self.pos_u_list= self.generate_train_data_c2u()
+
+        labels = torch.tensor(list(set(self.target_user_list)))
+        labels = labels.unsqueeze(0)
+        self.multi_hot_label = torch.zeros(labels.size(0), self.user_voc_len).scatter_(1, labels, 1.).to(self.device)
+        # pdb.set_trace()
 
         self.occur_item_voc_list = []
         for pos_item_list in self.pos_items_list:
@@ -97,19 +101,11 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # y_onehot = y_onehot.sum(dim=0).float()
 
         # pdb.set_trace()
-        self.ui_mat = self.get_ui_bipartite_adj_mat(self.adj_mat, path, add_self=True) #(user+item, user+item)
-        self.device = get_device(gpu)
+        self.ui_mat = self.get_ui_bipartite_adj_mat(self.adj_mat, path, user_voc=self.user_voc_len, item_voc=self.item_voc_len, add_self=True) #(user+item, user+item)
+        
         
         self.channels = channels
         self.c_dim = self.emb_size // self.channels
-
-
-        # self.weight_list = nn.ParameterList(
-        #     nn.Parameter(torch.empty(size=(self.emb_size, self.c_dim), dtype=torch.float), requires_grad=True) for i in
-        #     range(self.channels * self.layers))
-        # self.bias_list = nn.ParameterList(
-        #     nn.Parameter(torch.empty(size=(1, self.c_dim), dtype=torch.float), requires_grad=True) for i in
-        #     range(self.channels * self.layers))
 
         self.weight_list = nn.ParameterList(
             nn.Parameter(torch.empty(size=(self.emb_size, self.c_dim), dtype=torch.float), requires_grad=True) for i in
@@ -139,16 +135,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         #get row indices and col indices
         self.row_indices = self.A_in_list[0].indices()[0]
         self.col_indices = self.A_in_list[0].indices()[1]
-
-
-        # self.adj_item_mat = self.normalizeAdj(self.adj_mat.T, path_v2) #(item, item)
-        # pdb.set_trace()
-        # self.embedding_user = nn.Embedding(self.user_voc_len, self.emb_size)
-        # self.embedding_item = nn.Embedding(self.item_voc_len, self.emb_size)
-
-        # =======================================================
-        # self.row_indices = self.A_in_list[0].indices()[0]
-        # self.col_indices = self.A_in_list[0].indices()[1]
         
         self.embedding_user = nn.Embedding(self.user_voc_len, self.emb_size)
         self.embedding_item = nn.Embedding(self.item_voc_len, self.emb_size)
@@ -156,6 +142,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # pdb.set_trace()
         self.weight_lightgcn = nn.Parameter(torch.empty(size=(self.emb_size,  self.emb_size), dtype=torch.float), requires_grad=True)
         self.bias_lightgcn = nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True)
+        self.merge_id_feat_mlp = nn.Parameter(torch.empty(size=(self.emb_size * 2,  self.emb_size), dtype=torch.float), requires_grad=True)
 
         self.weight_lightgcn_list = nn.ParameterList(
             nn.Parameter(torch.empty(size=(self.emb_size, self.emb_size), dtype=torch.float), requires_grad=True) for i in
@@ -164,15 +151,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True) for i in
             range(self.layers))
         # =========================================
-        # with open('../data/Taobao/taobao_ori/user_attri2id_dict.pk', "rb") as f:
-        # with open('../data/Taobao/taobao_ori/uat2id.pk', "rb") as f:
-        #     self.at2id = pickle.load(f) # list of {key_name: id}
-        # with open('../data/Taobao/taobao_ori/userid2attids_dict.pk', "rb") as f:
-        # with open('../data/Taobao/taobao_ori/u2_uat_list.pk', "rb") as f:
         with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx.pk', "rb") as f: #与CTR模型编码一致;
-            self.userid_atlist = pickle.load(f) # (n_num, ut_num)
-        
-
+            self.userid_atlist = pickle.load(f) # (n_num, uat_num)
 
         self.user_attris = np.array(list(self.userid_atlist.values()))
         self.user_keys = np.array(list(self.userid_atlist.keys()))
@@ -181,22 +161,20 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # self.user_at_dim = self.emb_size // 2
         self.user_at_dim = self.emb_size // 1
 
-
-        # pdb.set_trace()
-        # self.q_layers = nn.ModuleList(
-        #     [nn.Linear(d_in, d_out) for d_in, d_out in zip(tmp_q_dims[:-1], tmp_q_dims[1:])]
-        # )
         embedding_user_at_list = []
         for i in range(len(self.each_u_at_num)):
             embedding_user_at_list.append(nn.Embedding(self.each_u_at_num[i] + 1, self.user_at_dim))
         self.embedding_user_at_list = nn.ModuleList(embedding_user_at_list)
-
+        
+        # self.embedding_u_at = nn.Embedding(self.u_at_voc_len, self.emb_size)
+        # pdb.set_trace()
 
         #=========vae模型============================
         self.user_vae = VAE(self.user_at_dim, device=self.device)
 
         self.u_at_mlps = nn.ModuleList([nn.Linear(self.user_at_dim, self.user_at_dim) for _ in range(len(self.each_u_at_num))])
-
+        # self.deep_vae_mlp = nn.Linear(self.user_at_dim *len(self.each_u_at_num), self.emb_size)
+        
         self.dense_user_self_biinter = nn.Linear(self.user_at_dim, self.user_at_dim)
         self.dense_user_onehop_siinter = nn.Linear(self.user_at_dim, self.user_at_dim)
         # self.dense_user_self_siinter = nn.Linear(self.user_at_dim, self.user_at_dim)
@@ -233,24 +211,11 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         self.bpr_batch_size = bpr_batch_size
         self.init_parameters() # replace other ways
         # self.init_parameters_v2()
-        # self.model_to_device()
-
-        # for test
-        # self.embedding_user_diff_init = nn.Embedding(self.user_voc_len, self.emb_size)
-        # # self.embedding_user_diff_init.weight.data.normal_(std=1e-4)
-        # self.embedding_user_diff_init.weight.data.uniform_(-0.1, 0.1)
-        # # stdv = 1.0 / math.sqrt(self.emb_size)
-        # # self.embedding_user_diff_init.weight.data.uniform_(-stdv, stdv)  
-
-        # self.embedding_user.weight.data.uniform_(-0.1, 0.1)
 
         self.to(device=self.device)
-
-        # self.user_attri_emb = torch.stack(self.user_attri_emb, dim=1).to(device=self.device) #(n_user, 7, dim)
         self.user_attri_emb = self.get_user_ats_for_train(device=self.device)
-        self.add_mlp = False # add_mlp效果很差, 删除MLP效果很好;
-        
-        
+        self.add_mlp = False
+        self.add_vae = add_vae
 
     def get_user_ats_for_train(self, device):
         #重新排序
@@ -259,7 +224,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             if u_idx in self.userid_atlist:
                 user_attris_val = self.userid_atlist[u_idx] #(7)
             else:
-                user_attris_val = [0 for _ in range(len(self.each_u_at_num))]
+                user_attris_val = [0 for _ in range(len(self.each_u_at_num))] # padding is zero: right;
             
             self.user_attri_ids.append(user_attris_val)
         
@@ -316,6 +281,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         for user_item_list in user_items_d.items():
             target_user_list.append(user_item_list[0])
             pos_items_list.append(user_item_list[1])
+            # target_user_list.extend(user_item_list[1])
+            # pos_items_list.append(user_item_list[0])
 
         return target_user_list, pos_items_list
 
@@ -830,7 +797,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         
         return adjacency_final
 
-    def get_ui_bipartite_adj_mat(self, ui_adj_mat, path, add_self=False):
+    def get_ui_bipartite_adj_mat(self, ui_adj_mat, path, user_voc, item_voc, add_self=False):
         """
         ui_adj_mat: (n_item, n_user)
         """
@@ -847,8 +814,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             # adj_mat[self.user_voc_len:, :self.user_voc_len] = R
 
             # u_ui_mat = sp.hstack((R.T,  sp.dok_matrix((self.user_voc_len, self.user_voc_len), dtype=np.float32))) #(u, u+i)
-            u_ui_mat = sp.hstack((sp.dok_matrix((self.user_voc_len, self.user_voc_len), dtype=np.float32), R.T)) #(u, u+i)
-            i_ui_mat = sp.hstack((R, sp.dok_matrix((self.item_voc_len, self.item_voc_len), dtype=np.float32))) #(i, u+i)
+            u_ui_mat = sp.hstack((sp.dok_matrix((user_voc, user_voc), dtype=np.float32), R.T)) #(u, u+i)
+            i_ui_mat = sp.hstack((R, sp.dok_matrix((item_voc, item_voc), dtype=np.float32))) #(i, u+i)
             adj_mat = sp.vstack((u_ui_mat, i_ui_mat)) #(u+i, u+i)
 
             if add_self:
@@ -900,7 +867,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             # item_embeddings = torch.sparse.mm(self.trans_to_cuda(adjacency), item_embeddings)
             # pdb.set_trace()
             item_embeddings_list = []
-            # for sub_adjacency in self.Graph:
             for sub_adjacency in adjacency_list:
                 # pdb.set_trace()
                 item_embeddings_sub = torch.sparse.mm(sub_adjacency, item_embeddings) #adjacency: (N, user_num);  item_emb:; (user_num, dim)
@@ -920,11 +886,49 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # item_embeddings = np.sum(final, 0)
         return item_embeddings
 
+    def computer_u_at(self, adjacency_list, embedding, add_mlp=False):
+        """
+        intput:
+            # adjacency: (user_num/item_num, user_num/item_num)
+            adjacency_list: list of adj
+            embedding: (user_num/item_num, dim)
+        output:
+            (user_num/item_num, dim)
+        """
+        # adjacency = self.adj_user_mat
+        
+        if add_mlp == False:
+            item_embeddings = embedding
+        else:
+            item_embeddings = torch.matmul(embedding, self.weight_lightgcn) + self.bias_lightgcn #每层的参数设置不同吗?
+
+        final = [item_embeddings]
+        for i in range(self.layers):
+            item_embeddings_list = []
+            for sub_adjacency in adjacency_list:
+                item_embeddings_sub = torch.sparse.mm(sub_adjacency, item_embeddings) #adjacency: (N, user_num);  item_emb:; (user_num, dim)
+                # add l2 normalize
+                # item_embeddings_sub = torch.nn.functional.normalize(item_embeddings_sub, p=2, dim=1)
+                item_embeddings_list.append(item_embeddings_sub)
+            item_embeddings = torch.cat(item_embeddings_list, dim=0) #(item_num, dim)
+
+            # add mlp
+            # if add_mlp:
+            #     item_embeddings = self.leakyrelu(torch.matmul(item_embeddings, self.weight_lightgcn_list[i]) + self.bias_lightgcn_list[i]) #每层的参数设置不同吗?
+                
+            final.append(item_embeddings)
+        item_embeddings = np.sum(final, 0) / (self.layers+1)
+        # item_embeddings = np.sum(final, 0)
+        return item_embeddings
+
     def forward(self):
         return
 
 
-    def bpr_loss_bipartite(self, t_customers, pos_u_list, neg_u_list, pos_uat_list, neg_uat_list, model_name="disengcn", add_cl=False):
+    def bpr_loss_bipartite(self, t_customers, pos_u_list, neg_u_list, pos_uat_list, neg_uat_list, 
+                            model_name="disengcn", add_cl=False, add_uat=False, add_vae_loss=False, 
+                            add_side_info=False, add_vae_loss_v2=False,
+                            vae_merge_side_info=False):
         """
         input:
             users: (bs), user_id
@@ -933,61 +937,145 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         output:
             loss: scalar
         """
+
+        loss = 0.
+
         if model_name == "lightgcn":
             # merge_u_uat_emb = torch.cat([self.embedding_user.weight, self.user_attri_emb.reshape(-1, len(self.each_u_at_num)*self.user_at_dim)], dim=-1) #(bs, u_dim + 7*aut_dim)
             # input_user_emb = self.convert_mlp(merge_u_uat_emb)
 
             input_user_emb = self.embedding_user.weight
+            # self.all_user_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight], dim=0)) #(user_num + item+num, dim)
             self.all_user_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight], dim=0), add_mlp=self.add_mlp) #(user_num + item+num, dim)
+
+            if add_uat:
+                # add user-at lightgcn
+                input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
+                output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
+                output_second_user_emb =  output_second_all_emb[:self.user_voc_len]
         
         elif model_name == "disengcn":
             #替换为disentangled learning方法, 观察下效果, 后续添加二部图和disentangled learning之间的对比学习损失函数;
             self.all_user_embeddings = self.disentangleComputer(self.Graph, self.embedding_user.weight, self.embedding_item.weight, mode="train") #(user_num + item+num, dim)
+        
+        
         elif model_name == "mlp":
             all_embeddings = torch.matmul(torch.cat([self.embedding_user.weight, self.embedding_item.weight]), self.weight_lightgcn) + self.bias_lightgcn #每层的参数设置不同吗?
             # z = self.weight_list[i](all_emb)
             self.all_user_embeddings = F.normalize(all_embeddings, dim=1)
-        
-
 
         users_emb_lookup_disen, items_emb_lookup_disen = torch.split(self.all_user_embeddings, [self.user_voc_len, self.item_voc_len])
 
 
+        if add_side_info:
+            batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
+            # 用户属性特征交互;
+            user_self_feature = self.feat_interaction(batch_user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1)
+            merge_id_feat_tensor = torch.cat([users_emb_lookup_disen, user_self_feature], dim=-1)
+            # users_emb_lookup_disen = self.leakyrelu(self.merge_id_feat_mlp(merge_id_feat_tensor))
+            users_emb_lookup_disen = self.leakyrelu(torch.matmul(merge_id_feat_tensor, self.merge_id_feat_mlp))
+
+        if add_vae_loss:
+            # VAE操作来解决冷启动问题
+            batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
+            # 用户属性特征交互;
+            # user_self_feature = batch_user_attri_emb.sum(dim=1)
+            # user_self_feature = self.feat_interaction(batch_user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1) #(n_user, dim)
+            user_self_feature = self.feat_interaction_mlp(batch_user_attri_emb) #(n_user, dim)
+            self.user_mu, self.user_var = self.user_vae.Q(user_self_feature)
+            self.user_z = self.user_vae.sample_z(self.user_mu, self.user_var)
+            self.user_preference_sample = self.user_vae.P(self.user_z) #(n_user, dim)
+
+            # add vae loss
+            # recon_w, kl_w = 1.e-2, 1.e-2
+            recon_w, kl_w = 1.e-2, 5.e-1
+            # batch_input_user_emb = self.embedding_user.weight[batch_users.long()] #输入表征;
+            all_user_embeddings_detach =  self.all_user_embeddings #gnn输出表征;
+            batch_input_user_emb = all_user_embeddings_detach[pos_u_list.long()] #GNN输出的表征, 梯度不回传, 只更新VAE模块;
+            batch_user_at_emb = self.user_preference_sample[pos_u_list.long()]
+            # batch_user_at_emb = self.user_preference_sample
+            batch_user_z, batch_user_mu, batch_user_var = self.user_z[pos_u_list.long()], self.user_mu[pos_u_list.long()], self.user_var[pos_u_list.long()]
+            recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb)
+            # kl_loss = torch.mean(0.5 * torch.sum(torch.exp(self.user_z) + self.user_mu ** 2 - 1. - self.user_var, 1))
+            kl_loss = torch.mean(0.5 * torch.sum(torch.exp(batch_user_z) + batch_user_mu ** 2 - 1. - batch_user_var, 1))
+            
+            recon_loss_total = recon_w * recon_loss
+            kl_loss_total = kl_w * kl_loss
+
+            # pdb.set_trace()
+            loss += recon_w * recon_loss
+            loss += kl_w * kl_loss
+
+            if vae_merge_side_info:
+                merge_id_feat_tensor = torch.cat([users_emb_lookup_disen, self.user_z], dim=-1)
+                # users_emb_lookup_disen = self.leakyrelu(self.merge_id_feat_mlp(merge_id_feat_tensor))
+                users_emb_lookup_disen = self.leakyrelu(torch.matmul(merge_id_feat_tensor, self.merge_id_feat_mlp))
+                # pdb.set_trace()
+        
         customer_emb = items_emb_lookup_disen[t_customers.long()]
         pos_u_emb = users_emb_lookup_disen[pos_u_list.long()]
         neg_u_emb = users_emb_lookup_disen[neg_u_list.long()]
 
-        # pos_uat_emb = self.user_attri_emb.reshape(-1, len(self.each_u_at_num)*self.user_at_dim)[pos_u_list.long()]
-        # neg_uat_emb = self.user_attri_emb.reshape(-1, len(self.each_u_at_num)*self.user_at_dim)[neg_u_list.long()]
-
-        # 替换为CTR任务的损失函数;
-        # self.user_attri_emb
-        
-        # pos_mask = torch.arange(pos.shape[1])[None, :].to(self.device) < pos_len[:, None] #(bs, max_len)
-        # neg_mask = torch.arange(neg.shape[1])[None, :].to(self.device) < neg_len[:, None] #(bs, max_len)
-
-        # mean pooling
-        # pos_emb_pooling = (pos_mask[:, :, None] * pos_emb).sum(1) #(bs, dim)
-        # neg_emb_pooling = (neg_mask[:, :, None] * neg_emb).sum(1)
-
-        # pos_emb_pooling = self.convert_mlp(torch.cat([pos_u_emb, pos_uat_emb], dim=-1))
-        # neg_emb_pooling = self.convert_mlp(torch.cat([neg_u_emb, neg_uat_emb], dim=-1))
-
         pos_emb_pooling = pos_u_emb
         neg_emb_pooling = neg_u_emb
-
         pos_scores= torch.sum(customer_emb*pos_emb_pooling, dim=1) #(bs)
         neg_scores= torch.sum(customer_emb*neg_emb_pooling, dim=1)
 
-        loss = torch.mean(nn.functional.softplus(neg_scores - pos_scores))
+        loss += torch.mean(nn.functional.softplus(neg_scores - pos_scores))
         # loss = torch.sum(nn.functional.softplus(neg_scores - pos_scores))
 
         reg_loss = (1/2)*(customer_emb.norm(2).pow(2) + 
                           pos_u_emb.norm(2).pow(2) + 
                           neg_u_emb.norm(2).pow(2))/float(len(t_customers))
 
-        cl_loss = 0.
+        if add_uat:
+            pos_u_at_emb = output_second_user_emb[pos_u_list.long()]
+            neg_u_at_emb = output_second_user_emb[neg_u_list.long()]
+            pos_uat_scores= torch.sum(customer_emb*pos_u_at_emb, dim=1) #(bs)
+            neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
+            loss_uat = torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
+            # loss += 1.0*loss_uat
 
+            # add cl loss;
+            loss_cl_uat = self.loss_contrastive_triple(pos_u_emb, pos_u_at_emb, add_local=True, add_global=False, cl_type="user", all_embedding=None)
+            loss += 1.0e-5 * loss_cl_uat
+            # pdb.set_trace()
+
+        if add_vae_loss_v2:
+            # user_self_feature = self.user_attri_emb.reshape(self.user_voc_len, -1) #(u_voc, 7*dim)
+            # add attribute-based lightgcn
+            # user_self_feature = torch.sum(self.user_attri_emb, dim=1) #(u_voc, dim)
+            self.user_mu, self.user_var = self.user_vae.Q(user_self_feature)
+            self.user_z = self.user_vae.sample_z(self.user_mu, self.user_var)
+            
+            self.user_preference_sample = self.user_vae.P(self.user_z) #(n_user, dim)
+            # add kl lass and recon loss;
+            recon_w, kl_w, vae_cl_w = 1.e-2, 5.e-1, 1.
+            # batch_input_user_emb = self.embedding_user.weight[batch_users.long()] #输入表征;
+            all_user_embeddings_detach = user_self_feature #gnn输出表征;
+            batch_input_user_emb = all_user_embeddings_detach[pos_u_list.long()] #GNN输出的表征, 梯度不回传, 只更新VAE模块;
+            batch_user_at_emb = self.user_preference_sample[pos_u_list.long()]
+            batch_user_z, batch_user_mu, batch_user_var = self.user_z[pos_u_list.long()], self.user_mu[pos_u_list.long()], self.user_var[pos_u_list.long()]
+            recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb) # A --> A
+            kl_loss = torch.mean(0.5 * torch.sum(torch.exp(batch_user_z) + batch_user_mu ** 2 - 1. - batch_user_var, 1))
+
+            # add cl loss
+            ori_user_emb = self.all_user_embeddings[:self.user_voc_len]
+            pos_u_emb_ori = ori_user_emb[pos_u_list.long()]
+            neg_u_emb_ori = ori_user_emb[neg_u_list.long()]
+
+            # vae_cl_loss = self.loss_contrastive_triple(pos_u_emb_ori, batch_user_z, add_local=True, add_global=False)
+            pos_scores_vae = torch.sum(batch_user_z*pos_u_emb_ori, dim=1) #(bs)
+            neg_scores_vae = torch.sum(batch_user_z*neg_u_emb_ori, dim=1)
+            vae_cl_loss = torch.mean(nn.functional.softplus(neg_scores_vae - pos_scores_vae))
+
+            vae_total_loss = recon_w * recon_loss + kl_w * kl_loss + vae_cl_w * vae_cl_loss
+            loss += vae_total_loss
+            # pdb.set_trace()
+            # pdb.set_trace()
+        
+        # cl loss is valid;
+        cl_loss = 0.
         if self.cl_w !=0.0:
             self.all_user_embeddings_cl = torch.matmul(torch.cat([self.embedding_user.weight, self.embedding_item.weight]), self.weight_lightgcn) + self.bias_lightgcn #每层的参数设置不同吗?
             # self.all_user_embeddings_cl = F.normalize(all_embeddings, dim=1)
@@ -997,8 +1085,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             pos_u_cl_emb = users_emb_lookup_cl[pos_u_list.long()]
             # neg_u_cl_emb = users_emb_lookup_cl[neg_u_list.long()]
             
-            cl_loss_u = self.loss_contrastive_triple(pos_u_emb, pos_u_cl_emb, add_local=True, add_global=True, cl_type="user") # local 与 global之间的权重可调整;
-            cl_loss_i = self.loss_contrastive_triple(customer_emb, customer_cl_emb, add_local=True, add_global=True, cl_type="item") # local 与 global之间的权重可调整;
+            cl_loss_u = self.loss_contrastive_triple(pos_u_emb, pos_u_cl_emb, add_local=True, add_global=True, cl_type="user", all_embedding=self.all_user_embeddings) # local 与 global之间的权重可调整;
+            cl_loss_i = self.loss_contrastive_triple(customer_emb, customer_cl_emb, add_local=True, add_global=True, cl_type="item", all_embedding=self.all_user_embeddings) # local 与 global之间的权重可调整;
             cl_loss = cl_loss_u + cl_loss_i
             # pdb.set_trace()
             cl_loss = self.cl_w * cl_loss
@@ -1006,102 +1094,9 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             # pdb.set_trace()
 
         return loss, reg_loss, cl_loss
-    
-    def bpr_loss_bipartite_cl(self, t_customers, pos_u_list, neg_u_list, pos_uat_list, neg_uat_list, add_cl=True):
-        """
-        input:
-            users: (bs), user_id
-            pos: (bs), item_id
-            neg: (bs), item_id
-        output:
-            loss: scalar
-        """
-        # lightgcn效果不佳, 还能作为对比学习的分支吗?
-        # all_user_embeddings_lightgcn = self.computer(self.Graph, torch.cat([self.embedding_user.weight, self.embedding_item.weight], dim=0)) #(user_num + item+num, dim)
-
-        #替换为disentangled learning方法, 观察下效果, 后续添加二部图和disentangled learning之间的对比学习损失函数;
-        all_user_embeddings_disen = self.disentangleComputer(self.Graph, self.embedding_user.weight, self.embedding_item.weight) #(user_num + item+num, dim)
-        
-        
-        all_user_embeddings_lightgcn = self.after_mlp
-
-        users_emb_lookup_lightgcn, items_emb_lookup_lightgcn = torch.split(all_user_embeddings_lightgcn, [self.user_voc_len, self.item_voc_len])
-        users_emb_lookup_disen, items_emb_lookup_disen = torch.split(all_user_embeddings_disen, [self.user_voc_len, self.item_voc_len])
-        # all_user_embeddings = self.computer(self.Graph, self.embedding_user.weight)
-        # users_emb = self.embedding_user(users.long()) #(bs, dim)
-        # pos_emb   = self.embedding_user(pos.long()) #(bs, max_len, dim)
-        # neg_emb   = self.embedding_user(neg.long()) #(bs, max_len, dim)
-        # pdb.set_trace()
-
-        user_emb = users_emb_lookup_lightgcn[users.long()]
-        # pos_emb = items_emb_lookup_lightgcn[pos.long()]
-        # neg_emb = items_emb_lookup_lightgcn[neg.long()]
-
-
-        user_emb_d = users_emb_lookup_disen[users.long()]
-        pos_emb_d = items_emb_lookup_disen[pos.long()]
-        neg_emb_d = items_emb_lookup_disen[neg.long()]
-        
-        # pos_mask = torch.arange(pos.shape[1])[None, :].to(self.device) < pos_len[:, None] #(bs, max_len)
-        # neg_mask = torch.arange(neg.shape[1])[None, :].to(self.device) < neg_len[:, None] #(bs, max_len)
-
-        # mean pooling
-        # pos_emb_pooling = (pos_mask[:, :, None] * pos_emb).sum(1) #(bs, dim)
-        # neg_emb_pooling = (neg_mask[:, :, None] * neg_emb).sum(1)
-
-        # pos_emb_pooling = pos_emb
-        # neg_emb_pooling = neg_emb
-        user_emb_t = user_emb_d
-        pos_emb_pooling = pos_emb_d
-        neg_emb_pooling = neg_emb_d
-
-        pos_scores= torch.sum(user_emb_t*pos_emb_pooling, dim=1) #(bs)
-        neg_scores= torch.sum(user_emb_t*neg_emb_pooling, dim=1)
-
-        loss = torch.mean(nn.functional.softplus(neg_scores - pos_scores))
-        # loss = torch.sum(nn.functional.softplus(neg_scores - pos_scores))
-
-        reg_loss = (1/2)*(user_emb_t.norm(2).pow(2) + 
-                          pos_emb_pooling.norm(2).pow(2) + 
-                          neg_emb_pooling.norm(2).pow(2))/float(len(users))
-        
-        # pdb.set_trace()
-        # add cl loss
-        if add_cl:
-            # add cl loss based items
-            # cl_loss = self.loss_contrastive(user_emb, user_emb_d, temp_value=0.1)
-
-            # v1 triple loss
-            # cl_loss = self.loss_contrastive_triple(user_emb, user_emb_d, temp_value=0.1)
-            # cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb) # local 与 global之间的权重可调整;
-            cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb, add_local=True, add_global=False) # local 与 global之间的权重可调整;
-            # cl_loss = self.loss_contrastive_triple(users_emb_lookup_disen, users_emb_lookup_lightgcn, temp_value=0.1) # local 与 global之间的权重可调整;
-
-            # MLP之后的表征和过了GNN后表征之间的对比学习;
-            # cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb) # local 与 global之间的权重可调整;
-            # user_cl_loss = self.ssl_layer_loss_infoNce(user_emb, user_emb_d, )
-            # v2 infoNCE loss
-            # cl_loss = self.ssl_layer_loss_infoNce(user_emb_d, user_emb, users_emb_lookup_lightgcn) # OOM
-
-            # ssl_loss = ssl_reg * (ssl_loss_user + item_alpha * ssl_loss_item)
-            # ssl_reg=1e-2, item_alpha=1.5
-            # pdb.set_trace()
-            # loss += 1e-5 * cl_loss
-            # cl_loss = 5e-6 * cl_loss
-            # cl_loss = 1e-5 * cl_loss
-            cl_loss = 5e-5 * cl_loss
-            loss += cl_loss
-
-            # add weight regularation;
-            # for key in self.weights:
-            #     reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
-            return loss, reg_loss, cl_loss
-            
-
-        return loss, reg_loss, 0.
 
     # def loss_contrastive_triple(self, tensor_anchor_v1, tensor_anchor_v2, temp_value=0.1):
-    def loss_contrastive_triple(self, tensor_anchor_v1, tensor_anchor_v2, add_local=False, add_global=False, cl_type='user'):
+    def loss_contrastive_triple(self, tensor_anchor_v1, tensor_anchor_v2, add_local=False, add_global=False, cl_type='user', all_embedding=None):
         """
             triple-based cl loss, row shuffle or row and column shuffle;
             refer to Yu et al. Self-Supervised Multi-Channel Hypergraph Convolutional Network for Social Recommendation, WWW'21.
@@ -1146,9 +1141,9 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             # global层面的对比学习;
             if cl_type == "user":
                 # graph = torch.mean(user_embeddings,0, keepdim=True) #(1, dim)
-                graph = torch.mean(self.all_user_embeddings[:self.user_voc_len], 0, keepdim=True) #(1, dim)
+                graph = torch.mean(all_embedding[:self.user_voc_len], 0, keepdim=True) #(1, dim)
             if cl_type == "item":
-                graph = torch.mean(self.all_user_embeddings[self.user_voc_len:], 0, keepdim=True) #(1, dim)
+                graph = torch.mean(all_embedding[self.user_voc_len:], 0, keepdim=True) #(1, dim)
 
             pos = score(user_embeddings, graph)
             neg1 = score(row_column_shuffle(user_embeddings), graph)
@@ -1156,11 +1151,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
             loss += global_loss
         
         # global_loss = torch.mean(-torch.log(F.sigmoid(pos-neg1)))
-
-        # pdb.set_trace()
-
         return loss
-        # return local_loss
+    
 
     def ssl_layer_loss_infoNce(self, current_embedding, previous_embedding, previous_all_embeddings, ssl_tmp=0.1):
 
@@ -1319,17 +1311,20 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         return nfm
 
     def feat_interaction_mlp(self, feature_embedding):
-        concat_u_at_emb = []
-        for i in range(len(self.each_u_at_num)):
-            u_at_after_mlp = self.u_at_mlps[i](feature_embedding[:, i, :])
-            concat_u_at_emb.append(u_at_after_mlp)
+        # concat_u_at_emb = []
+        # for i in range(len(self.each_u_at_num)):
+        #     u_at_after_mlp = self.u_at_mlps[i](feature_embedding[:, i, :])
+        #     concat_u_at_emb.append(u_at_after_mlp)
         
+        user_embs = self.leakyrelu(self.deep_vae_mlp(feature_embedding.reshape(self.user_voc_len, -1))) #(user_num, dim)
         # senet
-        concat_u_at_after_emb = torch.stack(concat_u_at_emb, dim=1) #(n_user, 7, dim)
-        attention_merge_u_at_emb = self.senet_layer(concat_u_at_after_emb) #(n_user, dim)
-        attention_merge_u_at_emb = attention_merge_u_at_emb.sum(1)
+        # concat_u_at_after_emb = torch.stack(concat_u_at_emb, dim=1) #(n_user, 7, dim)
 
-        return attention_merge_u_at_emb
+        # attention_merge_u_at_emb = self.senet_layer(concat_u_at_after_emb) #(n_user, dim)
+        # attention_merge_u_at_emb = attention_merge_u_at_emb.sum(1)
+
+        # return attention_merge_u_at_emb
+        return user_embs
 
     
     def cal_loss_v2(self, add_cl=False, model_name="disengcn"):
@@ -1340,7 +1335,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
         # if split == True:
         # self.Graph = self._split_A_hat(self.adj_user_mat) # list of sparse tensors;
         # pdb.set_trace()
-        self.Graph = self._split_A_hat(self.ui_mat) # list of sparse tensors; self.ui_mat: (user+item, user+item)
+        # self.Graph = self._split_A_hat(self.ui_mat) # list of sparse tensors; self.ui_mat: (user+item, user+item)
 
         print("done split matrix torch")
         # train_data_sub_list = self._split_A_hat_no_torch(self.adj_user_mat)
@@ -1387,21 +1382,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
                                                    neg_user_ats,
                                                    batch_size=self.bpr_batch_size)):
 
-
-            add_vae_loss = False
-            if add_vae_loss:
-                # VAE操作来解决冷启动问题
-                # batch_user_attri_emb = self.user_attri_emb[batch_users]
-                batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
-                # 用户属性特征交互;
-                # user_self_feature = self.feat_interaction(self.user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1) #(n_user, dim)
-                user_self_feature = self.feat_interaction_mlp(batch_user_attri_emb) #(n_user, dim)
-                # pdb.set_trace()
-                # vae, 每个batch对全局用户采样的效率太低了;
-                self.user_mu, self.user_var = self.user_vae.Q(user_self_feature)
-                self.user_z = self.user_vae.sample_z(self.user_mu, self.user_var)
-                self.user_preference_sample = self.user_vae.P(self.user_z) #(n_user, dim)
-
             if add_cl == True:
                 # loss, reg_loss, cl_loss = self.bpr_loss_bipartite_cl(batch_users, batch_pos_users, batch_neg_users, add_cl=True)
                 pass
@@ -1411,57 +1391,34 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
                                                                     batch_neg_users,
                                                                     batch_pos_user_ats,
                                                                     batch_neg_user_ats, 
-                                                                    model_name=model_name)
+                                                                    model_name=model_name,
+                                                                    add_uat=True)
             elif model_name == "lightgcn":
                 loss, reg_loss, cl_loss = self.bpr_loss_bipartite(batch_custormer,
                                                                     batch_pos_users,
                                                                     batch_neg_users,
                                                                     batch_pos_user_ats,
                                                                     batch_neg_user_ats, 
-                                                                    model_name=model_name)
+                                                                    model_name=model_name,
+                                                                    add_uat=False,
+                                                                    add_vae_loss=self.add_vae,
+                                                                    add_side_info=True,
+                                                                    add_vae_loss_v2=True,
+                                                                    vae_merge_side_info=False)
             elif model_name == "mlp":
                 loss, reg_loss, cl_loss = self.bpr_loss_bipartite(batch_custormer,
                                                                     batch_pos_users,
                                                                     batch_neg_users,
                                                                     batch_pos_user_ats,
                                                                     batch_neg_user_ats, 
-                                                                    model_name=model_name)
-            
+                                                                    model_name=model_name,
+                                                                    add_uat=True)
+
             # pdb.set_trace()
             u_c_pair_loss = loss.detach()
             # add vae loss
             u_c_pair_loss_cpu = u_c_pair_loss.cpu().item()
-            # print("loss: ", u_c_pair_loss)
-            # 不需要每个batch都执行vae
-            # if batch_i % 10 == 0 or (batch_i + 1) == total_batch:
-            # vae模型的优化目标;
-            
-            if add_vae_loss:
-                # add vae loss
-                recon_w, kl_w = 0.01, 0.1
-                # batch_input_user_emb = self.embedding_user.weight[batch_users.long()] #输入表征;
-                # batch_input_user_emb = self.all_user_embeddings[batch_users.long()] #GNN输出的表征;
-                # all_user_embeddings_detach =  self.all_user_embeddings.clone().detach()
-                all_user_embeddings_detach =  self.all_user_embeddings #gnn输出表征;
-                batch_input_user_emb = all_user_embeddings_detach[batch_pos_users.long()] #GNN输出的表征, 梯度不回传, 只更新VAE模块;
-                batch_user_at_emb = self.user_preference_sample[batch_pos_users.long()]
-                # batch_user_at_emb = self.user_preference_sample
-                batch_user_z, batch_user_mu, batch_user_var = self.user_z[batch_pos_users.long()], self.user_mu[batch_pos_users.long()], self.user_var[batch_pos_users.long()]
-                recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb)
-                # kl_loss = torch.mean(0.5 * torch.sum(torch.exp(self.user_z) + self.user_mu ** 2 - 1. - self.user_var, 1))
-                kl_loss = torch.mean(0.5 * torch.sum(torch.exp(batch_user_z) + batch_user_mu ** 2 - 1. - batch_user_var, 1))
-                
-                recon_loss_total = recon_w * recon_loss
-                kl_loss_total = kl_w * kl_loss
 
-                # pdb.set_trace()
-                loss += recon_w * recon_loss
-                loss += kl_w * kl_loss
-                # add loss;
-                recon_loss_total_cpu = recon_loss_total.cpu().item()
-                kl_loss_total_cpu = kl_loss_total.cpu().item()
-                aver_recon_loss += recon_loss_total_cpu
-                aver_kl_loss += kl_loss_total_cpu
 
             reg_loss = reg_loss*self.weight_decay
             loss = loss + reg_loss
@@ -1484,6 +1441,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
     def train_model(self, add_cl=False, model_name="disengcn"):
         # for epoch training
         self.Graph = self._split_A_hat(self.ui_mat)
+        self.Graph_u_at = self._split_A_hat(self.u_at_adj_norm_mat)
         # pdb.set_trace()
         # for epoch in range(self.epoch):
         for epoch in range(self.epoch_pre):
@@ -1496,137 +1454,69 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx(nn.Module):
     def save_embeddings(self, save_model_name="disengcn", use_vae=True):
         self.forward_embeddings(save_model_name=save_model_name, use_vae=use_vae, is_save=True)
         
-    def forward_embeddings(self, save_model_name="disengcn", use_vae=False, is_save=False, is_train=True):
+    def forward_embeddings(self, save_model_name="disengcn", use_vae=False, is_add_uat=False, add_side_info=False, vae_merge_side_info=False):
         """
         save user embeddings and item embeddings
         """
-        # if is_train:
-        #     self.train()
-        # else:
-        #     self.eval()
+        input_user_emb = self.embedding_user.weight
 
         if use_vae:
+            # user_self_feature = self.user_attri_emb.sum(1)
             # user_self_feature = self.feat_interaction(self.user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1) #(n_user, dim)
             user_self_feature = self.feat_interaction_mlp(self.user_attri_emb) #(n_user, dim)
-            # vae, 每个batch对全局用户采样的效率太低了;
-            # user_mu[350000:], user_var[350000:]
             user_mu, user_var = self.user_vae.Q(user_self_feature)
-            user_z = self.user_vae.sample_z(user_mu, user_var)
-            input_user_emb = self.user_vae.P(user_z) #(n_user, dim)
-            # ppp = nn.LeakyReLU()(self.user_vae.dense_zh(user_z)[350000:])
-            # ppp = F.tanh(self.user_vae.dense_zh(user_z)[350000:])
-            # self.user_vae.dense_hx(ppp)
-            # pass
-        else:
-            input_user_emb = self.embedding_user.weight
-        
+            user_z = self.user_vae.sample_z(user_mu, user_var) #(n_user, dim)
+            # self.vae_user_emb = self.user_vae.P(user_z) #(n_user, dim)
+            self.vae_user_emb = user_z #(n_user, dim), use output of encoder as features;
         
         if save_model_name == "embedding":
             # 1. original user embeddings
-            # all_embeddings = input_user_emb.cpu().detach().numpy()
-            # user_embeddings, items_emb_lookup = all_embeddings[:self.user_voc_len], all_embeddings[self.user_voc_len:]
             self.user_embeddings = self.embedding_user.weight
             self.item_embeddings = self.embedding_item.weight
         elif save_model_name == "mlp":
-            # add_mlp = True
-            # if add_mlp == True:
             all_embeddings = torch.matmul(torch.cat([input_user_emb, self.embedding_item.weight]), self.weight_lightgcn) + self.bias_lightgcn #每层的参数设置不同吗?
-            # z = self.weight_list[i](all_emb)
-            all_embeddings = F.normalize(all_embeddings, dim=1)
-            # user_emb_v1 = user_emb_v1.detach().cpu().numpy()
-            # pdb.set_trace()
-            # tmp test
-            # user_emb_v1 = self.embedding_user.weight.detach().cpu().numpy()
-            # user_emb_v2 = self.embedding_user_diff_init.weight.detach().cpu().numpy()
-            # pdb.set_trace()   
+            all_embeddings = F.normalize(all_embeddings, dim=1)  
             self.user_embeddings = all_embeddings[:self.user_voc_len]
             self.item_embeddings = all_embeddings[self.user_voc_len:]
         elif save_model_name == "lightgcn":
-            # 2. original item embeddings
-            # all_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight]))
-            
-            # merge_u_uat_emb = torch.cat([self.embedding_user.weight, self.user_attri_emb.reshape(-1, len(self.each_u_at_num)*self.user_at_dim)], dim=-1) #(bs, u_dim + 7*aut_dim)
-            # input_user_emb = self.convert_mlp(merge_u_uat_emb)
-
             input_user_emb = self.embedding_user.weight
             all_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight]), add_mlp=self.add_mlp)
 
             all_embeddings_cpu = all_embeddings.detach().cpu().numpy()
             user_embeddings, item_embeddings = all_embeddings[:self.user_voc_len], all_embeddings[self.user_voc_len:]
-            # pdb.set_trace()
-            # self.user_embeddings = self.convert_mlp(torch.cat([user_embeddings, self.user_attri_emb.reshape(-1, len(self.each_u_at_num)*self.user_at_dim)], dim=-1))
+            
+            if is_add_uat:
+                # add user-at lightgcn
+                input_second_all_emb = torch.cat([all_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
+                output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
+                user_embeddings =  output_second_all_emb[:self.user_voc_len]
+
+            if add_side_info:
+                batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
+                # 用户属性特征交互, # add cold user embedding
+                user_self_feature = self.feat_interaction(batch_user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1)
+                user_mu, user_var = self.user_vae.Q(user_self_feature)
+                user_z = self.user_vae.sample_z(user_mu, user_var) # ID features of cold users;
+                # pdb.set_trace()
+                user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, user_z)
+                
+                merge_id_feat_tensor = torch.cat([user_embeddings, user_self_feature], dim=-1)
+                user_embeddings = self.leakyrelu(torch.matmul(merge_id_feat_tensor, self.merge_id_feat_mlp))
+            
+            if vae_merge_side_info:
+                merge_id_feat_tensor = torch.cat([user_embeddings, self.vae_user_emb], dim=-1)
+                # users_emb_lookup_disen = self.leakyrelu(self.merge_id_feat_mlp(merge_id_feat_tensor))
+                user_embeddings = self.leakyrelu(torch.matmul(merge_id_feat_tensor, self.merge_id_feat_mlp))
+
+            
             self.user_embeddings = user_embeddings
             self.item_embeddings = item_embeddings
-            # if use_vae:
-            #     # pdb.set_trace()
-            #     user_exist_set= set(self.target_user_list)
-            #     for t_user in range(self.user_voc_len):
-            #         if t_user in user_exist_set:
-            #             # user_embeddings.append(user_embeddings_gnn[t_user])
-            #             # user_embeddings.append(user_emb_v1[t_user] * 15.)
-            #             # user_embeddings.append(user_emb_v1[t_user] * 15.)
-            #             # user_embeddings.append(user_emb_v1[t_user])
-            #         else:
-            #             # user_embeddings.append(self.embedding_user.weight[t_user])
-            #             # user_embeddings.append(user_emb_v2[t_user])
-            #             # user_embeddings.append(user_emb_v1[t_user])
-            #             user_embeddings.append(input_user_emb[t_user])
-            #     user_embeddings = np.array(user_embeddings)
-
 
         elif save_model_name == "disengcn":
-            # pdb.set_trace()
             all_embeddings = self.disentangleComputer(self.Graph, self.embedding_user.weight, self.embedding_item.weight, mode="predict") #(user_num + item+num, dim)
-            # all_embeddings_cpu = all_embeddings.detach().cpu().numpy()
-            # # pdb.set_trace()
-            # # use attribute to generate user emb;
-            # user_embeddings_gnn, items_emb_lookup = all_embeddings_cpu[:self.user_voc_len], all_embeddings_cpu[self.user_voc_len:]
-
-            # user_embeddings = []
-            # # pdb.set_trace()
-            # input_user_emb = input_user_emb.detach().cpu().numpy()
-           
-
-            # user_exist_set= set(self.target_user_list)
-            # for t_user in range(self.user_voc_len):
-            #     if t_user in user_exist_set:
-            #         user_embeddings.append(user_embeddings_gnn[t_user])
-            #         # user_embeddings.append(user_emb_v1[t_user] * 15.)
-            #         # user_embeddings.append(user_emb_v1[t_user] * 15.)
-            #         # user_embeddings.append(user_emb_v1[t_user])
-            #     else:
-            #         # user_embeddings.append(self.embedding_user.weight[t_user])
-            #         # user_embeddings.append(user_emb_v2[t_user])
-            #         # user_embeddings.append(user_emb_v1[t_user])
-            #         user_embeddings.append(input_user_emb[t_user])
-            # user_embeddings = np.array(user_embeddings)
-            # ori_u_emb = self.embedding_user.weight.detach().cpu().numpy()
-            # pdb.set_trace() #vae学习到的表征与原始输出表征的diff; 
-
-            # pdb.set_trace() # dddd = list(userAt2id.keys())[:10]
             self.user_embeddings = all_embeddings[:self.user_voc_len]
             self.item_embeddings = all_embeddings[self.user_voc_len:]
-        # if is_save:
-        #     user_id_list = []
-        #     user_rep_list = []
-        #     for key, index in self.userAt2id.items():
-        #         user_rep = user_embeddings[index]
-        #         user_id = key.strip().split("_")[1]
-        #         # save embedding
-        #         # if '999817' == user_id:
-        #         #     pdb.set_trace()
-        #         user_id_list.append(user_id)
-        #         user_rep_list.append(user_rep)
-            
-        #     # pdb.set_trace()
-        #     # pdb.set_trace() # f['value'][10]
-        #     with h5py.File(self.path_pretrain_user_emb_path, 'w') as hf:
-        #         hf.create_dataset("key", data=user_id_list)
-        #         hf.create_dataset("value", data=user_rep_list)
-        #     # pdb.set_trace()
-        #     print("successfully saving user embeddings.")
 
-        # self.train()
 
     
     def shuffle(self, *arrays, **kwargs):

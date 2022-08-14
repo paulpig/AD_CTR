@@ -1561,10 +1561,12 @@ DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint:
     epoch_pre: 0
 
 
-DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint_1_day:
+# DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint_1_day:
+DIN_1_day_custom_user_only_pos_graph_joint_train:
     model: DIN_Meta_JOINT
-    dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day
+    # dataset_id: taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day
     # dataset_id: taobao_x1_sub_base_only_user_min_1_baseline_new
+    dataset_id: taobao_x1_1_day_custom_user_only_pos_graph
     loss: 'binary_crossentropy'
     metrics: ['logloss', 'AUC']
     task: binary_classification
@@ -1612,9 +1614,11 @@ DIN_sub_base_only_user_min_1_meta_custom_user_only_pos_pretrain_joint_1_day:
     weight_decay: 1.0e-5
     # graph_embedding_dim: 64
     graph_embedding_dim: 10
-    epoch_pre: 20
-    # cl_w: 1.0e-3
+    epoch_pre: 30
     cl_w: 1.0e-4
+    add_vae: False
+    add_side_info: True
+    # cl_w: 0.0
 
 
 

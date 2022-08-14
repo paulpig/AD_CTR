@@ -95,14 +95,27 @@ class DIN_Meta_JOINT(BaseModel):
         #      for target_field in self.din_target_field])
         # self.dnn = MLP_Layer(input_dim=feature_map.num_fields * embedding_dim,
         # self.dnn = MLP_Layer(input_dim=(feature_map.num_fields + 1)* embedding_dim,
+        self.use_vae = self.params["add_vae"]
+        self.add_side_info = self.params["add_side_info"]
+
+        # if self.use_vae:
+        #     self.dnn_ori = MLP_Layer(input_dim=(feature_map.num_fields + 3)* embedding_dim,
+        #                         output_dim=1,
+        #                         hidden_units=dnn_hidden_units,
+        #                         hidden_activations=dnn_activations,
+        #                         output_activation=self.get_output_activation(task), 
+        #                         dropout_rates=net_dropout,
+        #                         batch_norm=batch_norm, 
+        #                         use_bias=True)
+        # else:
         self.dnn_ori = MLP_Layer(input_dim=(feature_map.num_fields + 2)* embedding_dim,
-                             output_dim=1,
-                             hidden_units=dnn_hidden_units,
-                             hidden_activations=dnn_activations,
-                             output_activation=self.get_output_activation(task), 
-                             dropout_rates=net_dropout,
-                             batch_norm=batch_norm, 
-                             use_bias=True)
+                            output_dim=1,
+                            hidden_units=dnn_hidden_units,
+                            hidden_activations=dnn_activations,
+                            output_activation=self.get_output_activation(task), 
+                            dropout_rates=net_dropout,
+                            batch_norm=batch_norm, 
+                            use_bias=True)
         
         # self.dnn = MLP_Layer(input_dim=(feature_map.num_fields -1) * embedding_dim,
         # self.dnn = MLP_Layer(input_dim=(feature_map.num_fields + 2) * embedding_dim,
@@ -171,6 +184,8 @@ class DIN_Meta_JOINT(BaseModel):
         self.meta_net_flat_v1 = MetaNetFlatV1(embedding_dim, embedding_dim)
         self.meta_net_flat_v2 = MetaNetFlatV1(embedding_dim, embedding_dim)
         self.output_linear = torch.nn.Linear(embedding_dim, 1)
+
+        self.pretrain_vae_emb_mlp = MetaNetFlat(self.graph_embedding_dim, embedding_dim)
 
         
         # self.test = torch.nn.Linear(embedding_dim, embedding_dim)
@@ -249,12 +264,22 @@ class DIN_Meta_JOINT(BaseModel):
         # pdb.set_trace() # self.embedding_layer.embedding_hooks['userid']
         # assert len(self.din_target_field) == 2
 
-        self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model) #以u_c graph为输出;
+        
+        self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model, use_vae=self.use_vae, add_side_info=self.add_side_info, vae_merge_side_info=False) #以u_c graph为输出;
         # self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model, is_add_uat=True) # 以u_uat graph为输出;
         # self.embedding_layer.other_user_emb_layer = self.pre_model.user_embeddings[self.reindex_user_ids]
         self.embedding_layer.other_user_emb_layer = self.pre_model.user_embeddings
         # self.embedding_layer.other_customer_emb_layer = self.pre_model.item_embeddings[self.reindex_customer_ids]
         self.embedding_layer.other_customer_emb_layer = self.pre_model.item_embeddings
+
+        # if self.use_vae:
+        #     self.embedding_layer.other_user_vae_emb_layer = self.pre_model.vae_user_emb
+        #     feature_spec = self.embedding_layer._feature_map.feature_specs['userid']
+        #     inp = X[:, feature_spec["index"]].long()
+        #     user_vae_embedding_hypergraph = self.embedding_layer.other_user_vae_emb_layer[inp] #消融实验;
+        #     convert_vae_emb_hyper = self.pretrain_vae_emb_mlp(user_vae_embedding_hypergraph)
+        #     feature_emb_dict['vae_hyper_emb'] = convert_vae_emb_hyper
+            # pdb.set_trace()
 
         # if self.use_meta and self.use_pretrain:
         # add pretrain user emb
@@ -264,7 +289,6 @@ class DIN_Meta_JOINT(BaseModel):
         # user_embedding_hypergraph = self.embedding_layer.embedding_layer['userid_cp'](inp) #消融实验;
         user_embedding_hypergraph = self.embedding_layer.other_user_emb_layer[inp] #消融实验;
         # user_embedding_hypergraph = self.embedding_layer.embedding_layer['userid'](inp)
-        # self.embedding_layer.embedding_layer['userid'](inp)
 
         feature_spec = self.embedding_layer._feature_map.feature_specs['customer']
         inp = X[:, feature_spec["index"]].long()
@@ -272,76 +296,8 @@ class DIN_Meta_JOINT(BaseModel):
 
 
         mask_label = self.params["add_sequence"]
-
         assert ((mask_label == 1) and (self.use_attention or self.use_meta)) or (mask_label == 0)
-        # pdb.set_trace()
-        # if mask_label == 1:
-        #     for idx, (target_field, sequence_field) in enumerate(zip(self.din_target_field, 
-        #                                                             self.din_sequence_field)):
-        #         # target_field, sequence_field = tuple(target_field), tuple(sequence_field)
-        #         target_emb = self.concat_embedding(target_field, feature_emb_dict) #(bs, dim)
-        #         sequence_emb = self.concat_embedding(sequence_field, feature_emb_dict) #(bs, sl, dim)
-        #         seq_field = np.array([sequence_field]).flatten()[0] # pick a sequence field
-        #         padding_idx = self.feature_map.feature_specs[seq_field]['padding_idx']
-        #         # mask: (bs, sl), sl=128;
-        #         mask = (X[:, self.feature_map.feature_specs[seq_field]["index"]].long() != padding_idx).float() # (bs, sl), 'index' means the positions of columns;
-        #         # pdb.set_trace()
-
-        #         if self.use_attention:
-        #             # 1. attention layer
-        #             pooling_emb = self.attention_layers[idx](target_emb, sequence_emb, mask) #(bs, dim)
-        #             # pdb.set_trace()
-        #         # 2. max pooling
-        #         # pooling_emb, _ = torch.max(mask.unsqueeze(dim=-1) * sequence_emb, dim=1)
-        #         # 3. mean pooling
-        #         # pooling_emb = torch.max(mask.unsqueeze(dim=-1) * sequence_emb, dim=1)
-                
-        #         if self.use_meta:
-        #             # 4. meta learning
-        #             if idx == 0:
-        #                 #1. 基于序列的meta unit
-        #                 meta_mapping =  self.meta_net(sequence_emb, mask) #(bs, dim, dim)
-        #                 pooling_emb = torch.bmm(target_emb.unsqueeze(1), meta_mapping).squeeze(1) #(bs, dim)
-
-        #                 # 2. 基于预训练表征的meta unit
-        #                 if self.use_pretrain and not self.concat_other_feat:
-        #                     # add pretrain user embedding meta
-        #                     # v1
-        #                     # pooling_emb_pretrain = self.meta_net_flat(user_embedding_hypergraph) #(bs, dim)
-        #                     meta_mapping_pretrain = self.meta_net_flat_v1(user_embedding_hypergraph) #(bs, dim, dim)
-        #                     pooling_emb_pretrain = torch.bmm(target_emb.unsqueeze(1), meta_mapping_pretrain).squeeze(1) #(bs, dim)
-
-        #                     # v1: add gate 
-        #                     # gate = nn.functional.sigmoid(self.gate_layer(torch.cat([pooling_emb, pooling_emb_pretrain], dim=-1)))
-        #                     # pooling_emb = gate * pooling_emb + (1. - gate) * pooling_emb_pretrain
-        #                     # v2: add op
-        #                     # pooling_emb = pooling_emb + pooling_emb_pretrain
-
-        #                     # origin feature
-        #                     # meta_mapping_bias = user_embedding_hypergraph
-
-        #                     # v2 concat
-        #                     # pooling_emb = torch.cat([pooling_emb, meta_mapping_bias], dim=-1)
-        #                     # pooling_emb = meta_mapping_bias
-                            
-        #                     # v2: only pretrain
-        #                     pooling_emb = pooling_emb_pretrain
-
-        #                 if self.use_pretrain and self.concat_other_feat:
-        #                     pooling_emb = user_embedding_hypergraph
-                
-        #         index = 0
-        #         for field_emb in pooling_emb.split(self.embedding_dim, dim=-1):
-        #             # pdb.set_trace()
-        #             feature_emb_dict["other_{}".format(index)] = field_emb
-        #             index += 1
-        
-        # # 对userid添加l2 norm, 保持维度的相同;
-        # for key, value in feature_emb_dict.items():
-        #     # feature_emb_dict[key] = torch.nn.functional.normalize(feature_emb_dict[key], p=2, dim=1)
-        #     feature_emb_dict[key] = self.layer_norm(value)
-        
-        
+             
         # pdb.set_trace()
         # remove 'click_user_sequence', 已转化为其他特征;
         if 'click_user_sequence' in feature_emb_dict:

@@ -595,3 +595,97 @@
         # return torch.cat(item_emb_list, dim=-1)
         return all_ouput_emb
         # return all_ouput_emb
+
+    
+        def bpr_loss_bipartite_cl(self, t_customers, pos_u_list, neg_u_list, pos_uat_list, neg_uat_list, add_cl=True):
+        """
+        input:
+            users: (bs), user_id
+            pos: (bs), item_id
+            neg: (bs), item_id
+        output:
+            loss: scalar
+        """
+        # lightgcn效果不佳, 还能作为对比学习的分支吗?
+        # all_user_embeddings_lightgcn = self.computer(self.Graph, torch.cat([self.embedding_user.weight, self.embedding_item.weight], dim=0)) #(user_num + item+num, dim)
+
+        #替换为disentangled learning方法, 观察下效果, 后续添加二部图和disentangled learning之间的对比学习损失函数;
+        all_user_embeddings_disen = self.disentangleComputer(self.Graph, self.embedding_user.weight, self.embedding_item.weight) #(user_num + item+num, dim)
+        
+        
+        all_user_embeddings_lightgcn = self.after_mlp
+
+        users_emb_lookup_lightgcn, items_emb_lookup_lightgcn = torch.split(all_user_embeddings_lightgcn, [self.user_voc_len, self.item_voc_len])
+        users_emb_lookup_disen, items_emb_lookup_disen = torch.split(all_user_embeddings_disen, [self.user_voc_len, self.item_voc_len])
+        # all_user_embeddings = self.computer(self.Graph, self.embedding_user.weight)
+        # users_emb = self.embedding_user(users.long()) #(bs, dim)
+        # pos_emb   = self.embedding_user(pos.long()) #(bs, max_len, dim)
+        # neg_emb   = self.embedding_user(neg.long()) #(bs, max_len, dim)
+        # pdb.set_trace()
+
+        user_emb = users_emb_lookup_lightgcn[users.long()]
+        # pos_emb = items_emb_lookup_lightgcn[pos.long()]
+        # neg_emb = items_emb_lookup_lightgcn[neg.long()]
+
+
+        user_emb_d = users_emb_lookup_disen[users.long()]
+        pos_emb_d = items_emb_lookup_disen[pos.long()]
+        neg_emb_d = items_emb_lookup_disen[neg.long()]
+        
+        # pos_mask = torch.arange(pos.shape[1])[None, :].to(self.device) < pos_len[:, None] #(bs, max_len)
+        # neg_mask = torch.arange(neg.shape[1])[None, :].to(self.device) < neg_len[:, None] #(bs, max_len)
+
+        # mean pooling
+        # pos_emb_pooling = (pos_mask[:, :, None] * pos_emb).sum(1) #(bs, dim)
+        # neg_emb_pooling = (neg_mask[:, :, None] * neg_emb).sum(1)
+
+        # pos_emb_pooling = pos_emb
+        # neg_emb_pooling = neg_emb
+        user_emb_t = user_emb_d
+        pos_emb_pooling = pos_emb_d
+        neg_emb_pooling = neg_emb_d
+
+        pos_scores= torch.sum(user_emb_t*pos_emb_pooling, dim=1) #(bs)
+        neg_scores= torch.sum(user_emb_t*neg_emb_pooling, dim=1)
+
+        loss = torch.mean(nn.functional.softplus(neg_scores - pos_scores))
+        # loss = torch.sum(nn.functional.softplus(neg_scores - pos_scores))
+
+        reg_loss = (1/2)*(user_emb_t.norm(2).pow(2) + 
+                          pos_emb_pooling.norm(2).pow(2) + 
+                          neg_emb_pooling.norm(2).pow(2))/float(len(users))
+        
+        # pdb.set_trace()
+        # add cl loss
+        if add_cl:
+            # add cl loss based items
+            # cl_loss = self.loss_contrastive(user_emb, user_emb_d, temp_value=0.1)
+
+            # v1 triple loss
+            # cl_loss = self.loss_contrastive_triple(user_emb, user_emb_d, temp_value=0.1)
+            # cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb) # local 与 global之间的权重可调整;
+            cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb, add_local=True, add_global=False) # local 与 global之间的权重可调整;
+            # cl_loss = self.loss_contrastive_triple(users_emb_lookup_disen, users_emb_lookup_lightgcn, temp_value=0.1) # local 与 global之间的权重可调整;
+
+            # MLP之后的表征和过了GNN后表征之间的对比学习;
+            # cl_loss = self.loss_contrastive_triple(user_emb_d, user_emb) # local 与 global之间的权重可调整;
+            # user_cl_loss = self.ssl_layer_loss_infoNce(user_emb, user_emb_d, )
+            # v2 infoNCE loss
+            # cl_loss = self.ssl_layer_loss_infoNce(user_emb_d, user_emb, users_emb_lookup_lightgcn) # OOM
+
+            # ssl_loss = ssl_reg * (ssl_loss_user + item_alpha * ssl_loss_item)
+            # ssl_reg=1e-2, item_alpha=1.5
+            # pdb.set_trace()
+            # loss += 1e-5 * cl_loss
+            # cl_loss = 5e-6 * cl_loss
+            # cl_loss = 1e-5 * cl_loss
+            cl_loss = 5e-5 * cl_loss
+            loss += cl_loss
+
+            # add weight regularation;
+            # for key in self.weights:
+            #     reg_loss += 0.001*tf.nn.l2_loss(self.weights[key])
+            return loss, reg_loss, cl_loss
+            
+
+        return loss, reg_loss, 0.

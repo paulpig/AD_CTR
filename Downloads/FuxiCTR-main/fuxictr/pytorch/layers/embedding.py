@@ -62,6 +62,7 @@ class EmbeddingDictLayer(nn.Module):
         self.embedding_hooks = nn.ModuleDict() # linear layer;
         self.other_user_emb_layer = None
         self.other_customer_emb_layer = None
+        self.other_user_vae_emb_layer = None
         self.bn = nn.BatchNorm1d(embedding_dim)
         for feature, feature_spec in self._feature_map.feature_specs.items():
             if self.is_required(feature):
