@@ -612,8 +612,9 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         neg_emb_pooling = neg_u_emb
         pos_scores= torch.sum(customer_emb*pos_emb_pooling, dim=1) #(bs)
         neg_scores= torch.sum(customer_emb*neg_emb_pooling, dim=1)
-
-        loss += torch.mean(nn.functional.softplus(neg_scores - pos_scores))
+        
+        loss_rec = torch.mean(nn.functional.softplus(neg_scores - pos_scores))
+        loss += loss_rec
         # loss = torch.sum(nn.functional.softplus(neg_scores - pos_scores))
 
         reg_loss = (1/2)*(customer_emb.norm(2).pow(2) + 
@@ -643,12 +644,16 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             self.user_preference_sample = self.user_vae.P(self.user_z) #(n_user, dim)
             # add kl lass and recon loss;
             # recon_w, kl_w, vae_cl_w = 1.e-2, 5.e-1, 1.e-4
-            recon_w, kl_w, vae_cl_w = 1.e-2, 1.e-2, 1.e-4
+            # recon_w, kl_w, vae_cl_w = 1.e-2, 1.e-2, 1.e-4
+            # recon_w, kl_w, vae_cl_w = 1.e-1, 1., 5.e-4 # KL和vae_cl之间是相互冲突的;
+            recon_w, kl_w, vae_cl_w = 1.e-1, 1., 0. # KL和vae_cl之间是相互冲突的;
             # batch_input_user_emb = self.embedding_user.weight[batch_users.long()] #输入表征;
-            all_user_embeddings_detach = user_self_feature #gnn输出表征;
+            # all_user_embeddings_detach = user_self_feature #gnn输出表征;
+            all_user_embeddings_detach = self.all_user_embeddings #gnn输出表征;
             batch_input_user_emb = all_user_embeddings_detach[pos_u_list.long()] #GNN输出的表征, 梯度不回传, 只更新VAE模块;
             batch_user_at_emb = self.user_preference_sample[pos_u_list.long()]
             batch_user_z, batch_user_mu, batch_user_var = self.user_z[pos_u_list.long()], self.user_mu[pos_u_list.long()], self.user_var[pos_u_list.long()]
+            # recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb) # A --> A
             recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb) # A --> A
             kl_loss = torch.mean(0.5 * torch.sum(torch.exp(batch_user_z) + batch_user_mu ** 2 - 1. - batch_user_var, 1))
 
@@ -657,10 +662,11 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             pos_u_emb_ori = ori_user_emb[pos_u_list.long()]
             neg_u_emb_ori = ori_user_emb[neg_u_list.long()]
 
-            vae_cl_loss = self.loss_contrastive_triple(pos_u_emb_ori, batch_user_z, add_local=True, add_global=False)
-            # pos_scores_vae = torch.sum(batch_user_z*pos_u_emb_ori, dim=1) #(bs)
-            # neg_scores_vae = torch.sum(batch_user_z*neg_u_emb_ori, dim=1)
-            # vae_cl_loss = torch.mean(nn.functional.softplus(neg_scores_vae - pos_scores_vae))
+            # vae_cl_loss = self.loss_contrastive_triple(pos_u_emb_ori, batch_user_z, add_local=True, add_global=False)
+            pos_scores_vae = torch.sum(batch_user_z*pos_u_emb_ori, dim=1) #(bs)
+            neg_scores_vae = torch.sum(batch_user_z*neg_u_emb_ori, dim=1)
+            vae_cl_loss = torch.mean(nn.functional.softplus(neg_scores_vae - pos_scores_vae))
+            # vae_cl_loss = 0.
 
             vae_total_loss = recon_w * recon_loss + kl_w * kl_loss + vae_cl_w * vae_cl_loss
             loss += vae_total_loss
@@ -684,8 +690,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             cl_loss = self.cl_w * cl_loss
             loss += cl_loss
             # pdb.set_trace()
-
-        return loss, reg_loss, cl_loss
+        return loss, reg_loss, loss_rec, cl_loss, recon_w * recon_loss, kl_w*kl_loss, vae_cl_w*vae_cl_loss
+        # return loss, reg_loss, cl_loss, 0, 0, 0
 
     # def loss_contrastive_triple(self, tensor_anchor_v1, tensor_anchor_v2, temp_value=0.1):
     def loss_contrastive_triple(self, tensor_anchor_v1, tensor_anchor_v2, add_local=False, add_global=False, cl_type='user', all_embedding=None):
@@ -923,8 +929,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         # target_users, pos_users, pos_len, neg_users, neg_len = self.shuffle(target_users, pos_users, pos_len, neg_users, neg_len)
         t_custormers, pos_users, neg_users, pos_user_ats, neg_user_ats = self.shuffle(t_customers, pos_users, neg_users, pos_user_ats, neg_user_ats)
         total_batch = len(t_custormers) // self.bpr_batch_size + 1
-        aver_loss, aver_u_c_pair_loss = 0., 0.
-        aver_recon_loss, aver_kl_loss = 0., 0.
+        aver_loss, aver_u_c_pair_loss, aver_cl_loss = 0., 0., 0.
+        aver_recon_loss, aver_kl_loss, aver_vae_cl_loss = 0., 0., 0.
 
         start_time = time()
         for (batch_i,
@@ -943,7 +949,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                 # loss, reg_loss, cl_loss = self.bpr_loss_bipartite_cl(batch_users, batch_pos_users, batch_neg_users, add_cl=True)
                 pass
             elif model_name == "disengcn":
-                loss, reg_loss, cl_loss = self.bpr_loss_bipartite(batch_custormer,
+                loss, reg_loss, rec_loss, recon_loss, kl_loss, vae_cl_loss = self.bpr_loss_bipartite(batch_custormer,
                                                                     batch_pos_users,
                                                                     batch_neg_users,
                                                                     batch_pos_user_ats,
@@ -951,7 +957,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                                                                     model_name=model_name,
                                                                     add_uat=True)
             elif model_name == "lightgcn":
-                loss, reg_loss, cl_loss = self.bpr_loss_bipartite(batch_custormer,
+                loss, reg_loss, rec_loss, cl_loss, recon_loss, kl_loss, vae_cl_loss = self.bpr_loss_bipartite(batch_custormer,
                                                                     batch_pos_users,
                                                                     batch_neg_users,
                                                                     batch_pos_user_ats,
@@ -972,10 +978,13 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                                                                     add_uat=True)
 
             # pdb.set_trace()
-            u_c_pair_loss = loss.detach()
+            # rec_loss = rec_loss.detach()
             # add vae loss
-            u_c_pair_loss_cpu = u_c_pair_loss.cpu().item()
-
+            u_c_pair_loss_cpu = rec_loss.cpu().item()
+            aver_recon_loss += recon_loss.cpu().item()
+            aver_kl_loss += kl_loss.cpu().item()
+            aver_vae_cl_loss += vae_cl_loss.cpu().item()
+            aver_cl_loss += cl_loss.cpu().item()
 
             reg_loss = reg_loss*self.weight_decay
             loss = loss + reg_loss
@@ -991,8 +1000,10 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         aver_u_c_pair_loss = aver_u_c_pair_loss / total_batch
         aver_recon_loss = aver_recon_loss / total_batch
         aver_kl_loss = aver_kl_loss / total_batch
+        aver_vae_cl_loss = aver_vae_cl_loss / total_batch
+        aver_cl_loss = aver_cl_loss / total_batch
 
-        return f"loss{aver_loss:.3f}--u_c_pair_loss{aver_u_c_pair_loss: .3f}--KL_loss{aver_kl_loss: .3f}--recon_loss{aver_recon_loss: .3f}--{time()-start_time}"
+        return f"loss{aver_loss:.3f}--u_c_pair_loss{aver_u_c_pair_loss: .3f}--aver_cl_loss{aver_cl_loss: .3f}--KL_loss{aver_kl_loss: .3f}--recon_loss{aver_recon_loss: .3f}--vae_cl_loss{aver_vae_cl_loss: .3f}--{time()-start_time}"
 
 
     def train_model(self, add_cl=False, model_name="disengcn"):
