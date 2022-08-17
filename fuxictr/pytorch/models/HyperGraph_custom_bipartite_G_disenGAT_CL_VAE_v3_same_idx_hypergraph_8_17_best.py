@@ -75,10 +75,10 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
 
         # user-attribute hypergraph;
         # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day.npz"
-        self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq.npz"
-        # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
-        self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq.npz"
-        # self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
+        # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq.npz"
+        self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
+        # self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq.npz"
+        self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
         self.u_at_adj_mat = sp.load_npz(self.u_at_hypergraph_path)
         self.u_at_voc_len, _ = self.u_at_adj_mat.get_shape()
         self.u_at_adj_norm_mat = self.get_ui_bipartite_adj_mat(self.u_at_adj_mat, 
@@ -106,7 +106,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         self.weight_lightgcn = nn.Parameter(torch.empty(size=(self.emb_size,  self.emb_size), dtype=torch.float), requires_grad=True)
         self.bias_lightgcn = nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True)
 
-        self.random_mask = torch.empty(size=(1, self.user_voc_len)).to(self.device)
 
         # ===============================user-attributes========================================
         # with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx.pk', "rb") as f: #与CTR模型编码一致;
@@ -127,8 +126,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             embedding_user_at_list.append(nn.Embedding(self.each_u_at_num[i] + 1, self.user_at_dim))
             feat_nums += (self.each_u_at_num[i] + 1) # 128
         self.embedding_user_at_list = nn.ModuleList(embedding_user_at_list)
-        self.embedding_u_at = nn.Embedding(self.u_at_voc_len, self.emb_size) # 128
-        # self.embedding_u_at =  nn.ModuleList(embedding_user_at_list) # 128
+        self.embedding_u_at = nn.Embedding(self.u_at_voc_len, self.emb_size) # 124
         # pdb.set_trace()
         #==================================vae模型============================
         self.user_vae = VAE(self.user_at_dim, device=self.device)        
@@ -498,18 +496,11 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             self.all_user_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight], dim=0), add_mlp=self.add_mlp) #(user_num + item+num, dim)
 
             if add_uat:
-                # 添加随机dropout方法来模拟冷启动过程;
-                mask_ratio = 0.2
-                mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
-                origin_emb = self.embedding_user.weight / (self.layers + 1)
-                dropout_user_emb = torch.where(torch.transpose(mask, 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
                 # add user-at lightgcn
-                input_second_all_emb = torch.cat([dropout_user_emb, self.embedding_u_at.weight], dim=0)
-                # input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
-                # input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], torch.cat([emb.weight for emb in self.embedding_u_at], dim=0)], dim=0)
+                input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
                 output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
                 output_second_user_emb =  output_second_all_emb[:self.user_voc_len]
-                # pdb.set_trace()
+
                 # merge cold users
 
         

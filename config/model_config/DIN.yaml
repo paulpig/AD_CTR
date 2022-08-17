@@ -1572,6 +1572,8 @@ DIN_1_day_custom_user_only_pos_graph_joint_train:
     task: binary_classification
     optimizer: adam
     learning_rate: 1.0e-3
+    learning_rate_vae: 1.e-3
+    # learning_rate: 2.0e-3
     embedding_regularizer:  1.0e-5
     # embedding_regularizer: 1.0e-5
     net_regularizer: 1.0e-5
@@ -1617,7 +1619,7 @@ DIN_1_day_custom_user_only_pos_graph_joint_train:
     epoch_pre: 30
     cl_w: 1.0e-4
     add_vae: False
-    add_side_info: True
+    add_side_info: False
     # cl_w: 0.0
 
 

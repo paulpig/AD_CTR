@@ -196,9 +196,10 @@ class DIN_Meta_JOINT(BaseModel):
 
         # pdb.set_trace()
         # para_names_v2 = []
-        for n, p in self.pre_model.named_parameters():
-            if "user_vae" in n:
-                p.requires_grad = False # 在finetune时, 暂停更新vae部分的参数;
+        # 固定住vae相关代码;
+        # for n, p in self.pre_model.named_parameters():
+        #     if "user_vae" in n or "embedding_user_at_list" in n or "dense_user_self_biinter" in n or "dense_user_onehop_siinter" in n:
+        #         p.requires_grad = False
             # para_names_v2.append(n)
         # pdb.set_trace()
 
@@ -265,7 +266,10 @@ class DIN_Meta_JOINT(BaseModel):
         # assert len(self.din_target_field) == 2
 
         
-        self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model, use_vae=self.use_vae, add_side_info=self.add_side_info, vae_merge_side_info=False) #以u_c graph为输出;
+        self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model, 
+                                            use_vae=self.use_vae, add_side_info=self.add_side_info, 
+                                            vae_merge_side_info=False, add_vae_on_GNN=False,
+                                            is_add_uat=True) #以u_c graph为输出;
         # self.pre_model.forward_embeddings(save_model_name=self.pre_encoder_model, is_add_uat=True) # 以u_uat graph为输出;
         # self.embedding_layer.other_user_emb_layer = self.pre_model.user_embeddings[self.reindex_user_ids]
         self.embedding_layer.other_user_emb_layer = self.pre_model.user_embeddings

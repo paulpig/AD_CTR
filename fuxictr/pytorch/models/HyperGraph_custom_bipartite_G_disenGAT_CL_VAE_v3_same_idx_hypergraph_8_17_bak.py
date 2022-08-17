@@ -41,8 +41,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                  add_norm=False,
                  channels=2,
                  cl_w=1.0e-5,
-                 add_vae=False,
-                 learning_rate_vae=1.e-3):
+                 add_vae=False):
         super(HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph, self).__init__()
         
         # parameters
@@ -76,9 +75,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         # user-attribute hypergraph;
         # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day.npz"
         self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq.npz"
-        # self.u_at_hypergraph_path = "../data/Taobao/taobao_ori/u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
         self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq.npz"
-        # self.save_pre_norm_u_at_hypergraph_path = "../data/Taobao/taobao_ori/pre_norm_u_at_hypergraph_1_day_rm_lfreq_more_paddings.npz"
         self.u_at_adj_mat = sp.load_npz(self.u_at_hypergraph_path)
         self.u_at_voc_len, _ = self.u_at_adj_mat.get_shape()
         self.u_at_adj_norm_mat = self.get_ui_bipartite_adj_mat(self.u_at_adj_mat, 
@@ -94,23 +91,71 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         labels = torch.tensor(list(set(self.target_user_list)))
         labels = labels.unsqueeze(0)
         self.multi_hot_label = torch.zeros(labels.size(0), self.user_voc_len).scatter_(1, labels, 1.).to(self.device)
+        # pdb.set_trace()
+
+        # self.occur_item_voc_list = []
+        # for pos_item_list in self.pos_items_list:
+        #     self.occur_item_voc_list.extend(pos_item_list)
+        
+        # self.occur_item_voc_set = list(set(self.occur_item_voc_list))
+        # y_onehot = nn.functional.one_hot( torch.LongTensor(self.target_user_list), num_classes=self.user_voc_len)
+        # y_onehot = y_onehot.sum(dim=0).float()
 
         # pdb.set_trace()
         self.ui_mat = self.get_ui_bipartite_adj_mat(self.adj_mat, path, user_voc=self.user_voc_len, item_voc=self.item_voc_len, add_self=True) #(user+item, user+item)
         
+
+        #=========================== disentangled learning ==============================
+        # disentangle learning相关代码;
+        # self.channels = channels
+        # self.c_dim = self.emb_size // self.channels
+
+        # self.weight_list = nn.ParameterList(
+        #     nn.Parameter(torch.empty(size=(self.emb_size, self.c_dim), dtype=torch.float), requires_grad=True) for i in
+        #     range(self.channels))
+        # self.bias_list = nn.ParameterList(
+        #     nn.Parameter(torch.empty(size=(1, self.c_dim), dtype=torch.float), requires_grad=True) for i in
+        #     range(self.channels))
         
-        #================================recommendation model===================================
+        # self.weight_list = nn.ModuleList([nn.Linear(self.emb_size, self.c_dim, bias=True) for _ in range(self.channels)])
+        # self.linear_1 = nn.Linear(self.in_dim, self.channels*self.c_dim, bias=True)
+        # self.iterations = iterations
+        # self.A_in_list = [nn.Parameter(torch.sparse.FloatTensor(self.user_voc_len + self.item_voc_len, self.user_voc_len + self.item_voc_len)) for i in 
+        #     range(self.channels)]
+        # self.A_in_list = nn.ParameterList(self.A_in_list)
+        
+        # 初始化;
+        # if self.ui_mat is not None:
+        #     for i in range(self.channels):
+        #         # self.A_in_list[i].data = self._convert_sp_mat_to_sp_tensor(self.ui_mat).coalesce().to(device=self.device)
+        #         self.A_in_list[i].data = self._convert_sp_mat_to_sp_tensor(self.ui_mat).coalesce()
+        #         self.A_in_list[i].requires_grad = False
+        #         # self.A_in.data = self._convert_sp_mat_to_sp_tensor(self.ui_mat.coalesce().to(self.device))
+
+        # #get row indices and col indices
+        # self.row_indices = self.A_in_list[0].indices()[0]
+        # self.col_indices = self.A_in_list[0].indices()[1]
+
+
+        #===============================================================================================
+        
         self.embedding_user = nn.Embedding(self.user_voc_len, self.emb_size)
         self.embedding_item = nn.Embedding(self.item_voc_len, self.emb_size)
+
         # pdb.set_trace()
         self.weight_lightgcn = nn.Parameter(torch.empty(size=(self.emb_size,  self.emb_size), dtype=torch.float), requires_grad=True)
         self.bias_lightgcn = nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True)
+        # self.merge_id_feat_mlp = nn.Parameter(torch.empty(size=(self.emb_size * 2,  self.emb_size), dtype=torch.float), requires_grad=True)
 
-        self.random_mask = torch.empty(size=(1, self.user_voc_len)).to(self.device)
+        # self.weight_lightgcn_list = nn.ParameterList(
+        #     nn.Parameter(torch.empty(size=(self.emb_size, self.emb_size), dtype=torch.float), requires_grad=True) for i in
+        #     range(self.layers))
+        # self.bias_lightgcn_list = nn.ParameterList(
+        #     nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True) for i in
+        #     range(self.layers))
 
         # ===============================user-attributes========================================
-        # with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx.pk', "rb") as f: #与CTR模型编码一致;
-        with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx_rm_lfreq.pk', "rb") as f: #与CTR模型编码一致;
+        with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx.pk', "rb") as f: #与CTR模型编码一致;
             self.userid_atlist = pickle.load(f) # (n_num, uat_num)
 
         self.user_attris = np.array(list(self.userid_atlist.values()))
@@ -121,49 +166,83 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         self.user_at_dim = self.emb_size // 1
 
         embedding_user_at_list = []
-        feat_nums = 0
         for i in range(len(self.each_u_at_num)):
-            # embedding_user_at_list.append(nn.Embedding(self.each_u_at_num[i] + 1, self.user_at_dim).to(self.device))
-            embedding_user_at_list.append(nn.Embedding(self.each_u_at_num[i] + 1, self.user_at_dim))
-            feat_nums += (self.each_u_at_num[i] + 1) # 128
-        self.embedding_user_at_list = nn.ModuleList(embedding_user_at_list)
-        self.embedding_u_at = nn.Embedding(self.u_at_voc_len, self.emb_size) # 128
-        # self.embedding_u_at =  nn.ModuleList(embedding_user_at_list) # 128
+            embedding_user_at_list.append(nn.Embedding(self.each_u_at_num[i] + 1, self.user_at_dim).to(self.device))
+        # self.embedding_user_at_list = nn.ModuleList(embedding_user_at_list)
+        self.embedding_user_at_list = embedding_user_at_list
+        
+        # self.embedding_u_at = nn.Embedding(self.u_at_voc_len, self.emb_size)
         # pdb.set_trace()
+
         #==================================vae模型============================
-        self.user_vae = VAE(self.user_at_dim, device=self.device)        
+        self.user_vae = VAE(self.user_at_dim, device=self.device)
+
+        # self.u_at_mlps = nn.ModuleList([nn.Linear(self.user_at_dim, self.user_at_dim) for _ in range(len(self.each_u_at_num))])
+        # self.deep_vae_mlp = nn.Linear(self.user_at_dim *len(self.each_u_at_num), self.emb_size)
+        
         self.dense_user_self_biinter = nn.Linear(self.user_at_dim, self.user_at_dim)
         self.dense_user_onehop_siinter = nn.Linear(self.user_at_dim, self.user_at_dim)
+        # self.dense_user_self_siinter = nn.Linear(self.user_at_dim, self.user_at_dim)
+
+        # self.merge_user_at = nn.Linear(self.user_at_dim + self.emb_size, self.emb_size)
+
         self.leakyrelu = nn.LeakyReLU()
 
-        # ==================================another vae for user================
-        self.user_vae_v2 = VAE(self.user_at_dim, device=self.device)
+        # self.senet_layer = SqueezeExcitationLayer(len(self.each_u_at_num), 3)
+
+        # self.convert_mlp = nn.Linear(self.user_at_dim*len(self.each_u_at_num) + self.emb_size, self.emb_size)
+        #====================================
 
 
-        # =======================================
-        self.optimizer = torch.optim.Adam([{"params":  self.embedding_user.parameters()}, 
+        # 单独优化rec loss + cl loss;
+        # self.compile(kwargs["optimizer"], loss=kwargs["loss"], lr=learning_rate)
+        # para_list = []
+        # for n, p in self.named_parameters():
+        #     if "user_vae" in n:
+        #         p.requires_grad = False # 在finetune时, 暂停更新vae部分的参数;
+        #     if "embedding_user_at_list" in n:
+        #         p.requires_grad = False
+        #         pdb.set_trace()
+        #     if "dense_user_self_biinter" in n or "dense_user_onehop_siinter" in n:
+        #         p.requires_grad = False
+        #         # pdb.set_trace()
+        #     para_list.append(n)
+        # pdb.set_trace()
+
+        self.optimizer = torch.optim.Adam([{"params": self.embedding_user.parameters()}, 
                                             {"params": self.embedding_item.parameters()},
                                             {"params": self.weight_lightgcn},
-                                            {"params": self.bias_lightgcn},
-                                            {"params": self.embedding_u_at.parameters()}], lr=learning_rate)
-        
-        emb_attri_param = []
-        only_vae = False
-        if only_vae == True:
-            # for emb_layer in self.embedding_user_at_list:
-            emb_attri_param.append({"params": self.embedding_user_at_list.parameters()})
-            emb_attri_param.append({"params": self.user_vae.parameters()})
-            emb_attri_param.append({"params": self.dense_user_self_biinter.parameters()})
-            emb_attri_param.append({"params": self.dense_user_onehop_siinter.parameters()})
-            self.optimizer_joint = torch.optim.Adam(emb_attri_param, lr=learning_rate_vae)
-        else:
-            self.optimizer_joint = torch.optim.Adam(self.parameters(), lr=learning_rate_vae)
+                                            {"params": self.bias_lightgcn}], lr=learning_rate)
 
-        # ============================超参=============================
+        # 联合优化;
+        # for n, p in self.named_parameters():
+        #     if "user_vae" in n:
+        #         p.requires_grad = True # 在finetune时, 暂停更新vae部分的参数;
+        #     if "embedding_user_at_list" in n:
+        #         p.requires_grad = True
+        #     if "dense_user_self_biinter" in n or "dense_user_onehop_siinter" in n:
+        #         p.requires_grad = True
+        emb_attri_param = []
+        for emb_layer in self.embedding_user_at_list:
+            emb_attri_param.append({"params": emb_layer.parameters()})
+        self.optimizer_joint = torch.optim.Adam([{"params":self.parameters()}] + emb_attri_param, lr=learning_rate)
+        # self.optimizer_vae = torch.optim.Adam(self.parameters(), lr=learning_rate)
+        # pdb.set_trace()
+        # para_names = []
+        # for n, p in self.named_parameters():
+        #     para_names.append(n)
+            # if 'vae' in n:
+            #     pdb.set_trace()
+
+        # print(list(self.named_parameters()))
+        # pdb.set_trace()
+
         self.epoch_pre = epoch_pre
         self.epoch = epoch
         self.folds = 20
+        # self.folds = 1000
         self.weight_decay = weight_decay
+        # self.kwargs = kwargs
         self.bpr_batch_size = bpr_batch_size
         self.init_parameters() # replace other ways
         # self.init_parameters_v2()
@@ -172,7 +251,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         self.user_attri_emb = self.get_user_ats_for_train(device=self.device)
         self.add_mlp = False
         self.add_vae = add_vae
-        self.mask_tensor = torch.zeros(self.user_voc_len, self.emb_size).to(self.device)
         # self.cold_user_emb = nn.Parameter(torch.zeros(size=(self.user_voc_len, self.emb_size), dtype=torch.float), requires_grad=True)
         # self.cold_user_emb = nn.Embedding(self.user_voc_len, self.emb_size)
         # self.first_forward_flag = False
@@ -477,7 +555,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
     def bpr_loss_bipartite(self, t_customers, pos_u_list, neg_u_list, pos_uat_list, neg_uat_list, 
                             model_name="disengcn", add_cl=False, add_uat=False, add_vae_loss=False, 
                             add_side_info=False, add_vae_loss_v2=False,
-                            vae_merge_side_info=False, add_vae_on_GNN=False):
+                            vae_merge_side_info=False):
         """
         input:
             users: (bs), user_id
@@ -498,20 +576,10 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             self.all_user_embeddings = self.computer(self.Graph, torch.cat([input_user_emb, self.embedding_item.weight], dim=0), add_mlp=self.add_mlp) #(user_num + item+num, dim)
 
             if add_uat:
-                # 添加随机dropout方法来模拟冷启动过程;
-                mask_ratio = 0.2
-                mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
-                origin_emb = self.embedding_user.weight / (self.layers + 1)
-                dropout_user_emb = torch.where(torch.transpose(mask, 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
                 # add user-at lightgcn
-                input_second_all_emb = torch.cat([dropout_user_emb, self.embedding_u_at.weight], dim=0)
-                # input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
-                # input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], torch.cat([emb.weight for emb in self.embedding_u_at], dim=0)], dim=0)
+                input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
                 output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
                 output_second_user_emb =  output_second_all_emb[:self.user_voc_len]
-                # pdb.set_trace()
-                # merge cold users
-
         
         elif model_name == "disengcn":
             #替换为disentangled learning方法, 观察下效果, 后续添加二部图和disentangled learning之间的对比学习损失函数;
@@ -533,13 +601,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             merge_id_feat_tensor = torch.cat([users_emb_lookup_disen, user_self_feature], dim=-1)
             # users_emb_lookup_disen = self.leakyrelu(self.merge_id_feat_mlp(merge_id_feat_tensor))
             users_emb_lookup_disen = self.leakyrelu(torch.matmul(merge_id_feat_tensor, self.merge_id_feat_mlp))
-
-        if add_vae_on_GNN:
-            self.user_mu_v2, self.user_var_v2 = self.user_vae_v2.Q(users_emb_lookup_disen)
-            self.user_z_v2 = self.user_vae_v2.sample_z(self.user_mu_v2, self.user_var_v2)
-            # self.user_preference_sample = self.user_vae.P(self.user_z)
-            users_emb_lookup_disen = self.user_z_v2
-
 
         if add_vae_loss:
             # VAE操作来解决冷启动问题
@@ -595,24 +656,17 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                           pos_u_emb.norm(2).pow(2) + 
                           neg_u_emb.norm(2).pow(2))/float(len(t_customers))
 
-        loss_cl_uat_w = 0.0
-        recon_w, kl_w, vae_cl_w = 0., 0., 0.
-        recon_loss, kl_loss, vae_cl_loss = loss, loss, loss
-        
         if add_uat:
-            loss_cl_uat_w = 1.e-4
-            vae_cl_w = 1.0
             pos_u_at_emb = output_second_user_emb[pos_u_list.long()]
             neg_u_at_emb = output_second_user_emb[neg_u_list.long()]
             pos_uat_scores= torch.sum(customer_emb*pos_u_at_emb, dim=1) #(bs)
             neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
             loss_uat = torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
             # loss += 1.0*loss_uat
-            
+
             # add cl loss;
-            loss_cl_uat = loss_cl_uat_w * self.loss_contrastive_triple(pos_u_at_emb, pos_u_emb, add_local=True, add_global=True, cl_type="user", all_embedding=output_second_user_emb)
-            vae_cl_loss = loss_cl_uat
-            loss += loss_cl_uat
+            loss_cl_uat = self.loss_contrastive_triple(pos_u_emb, pos_u_at_emb, add_local=True, add_global=False, cl_type="user", all_embedding=None)
+            loss += 1.0e-5 * loss_cl_uat
             # pdb.set_trace()
 
         if add_vae_loss_v2:
@@ -629,7 +683,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             # recon_w, kl_w, vae_cl_w = 1.e-1, 1., 5.e-4 # KL和vae_cl之间是相互冲突的;
             # recon_w, kl_w, vae_cl_w = 1.e-1, 1., 0. # KL和vae_cl之间是相互冲突的;
             recon_w, kl_w, vae_cl_w = 1.e-4, 1., 0. # KL和vae_cl之间是相互冲突的;
-            # recon_w, kl_w, vae_cl_w = 1., 1., 0. # KL和vae_cl之间是相互冲突的;
             # batch_input_user_emb = self.embedding_user.weight[batch_users.long()] #输入表征;
             # all_user_embeddings_detach = user_self_feature #gnn输出表征;
             all_user_embeddings_detach = self.all_user_embeddings #gnn输出表征;
@@ -640,33 +693,22 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             # v1, mse
             # recon_loss = torch.norm(batch_user_at_emb - batch_input_user_emb) # A --> A
             # v2, triple loss
-            # recon_loss = self.loss_contrastive_triple(batch_user_at_emb, batch_input_user_emb, add_local=True, add_global=False)
-            recon_loss = 0.
+            recon_loss = self.loss_contrastive_triple(batch_user_at_emb, batch_input_user_emb, add_local=True, add_global=False)
             kl_loss = torch.mean(0.5 * torch.sum(torch.exp(batch_user_z) + batch_user_mu ** 2 - 1. - batch_user_var, 1))
 
-            # v3, add cl loss, 使用Z去构建协同信号;
-            batch_user_neg_z = self.user_z[neg_u_list.long()]
+            # add cl loss
+            ori_user_emb = self.all_user_embeddings[:self.user_voc_len]
+            pos_u_emb_ori = ori_user_emb[pos_u_list.long()]
+            neg_u_emb_ori = ori_user_emb[neg_u_list.long()]
             # vae_cl_loss = self.loss_contrastive_triple(pos_u_emb_ori, batch_user_z, add_local=True, add_global=False)
-            pos_scores_vae = torch.sum(customer_emb*batch_user_z, dim=1) #(bs)
-            neg_scores_vae = torch.sum(customer_emb*batch_user_neg_z, dim=1)
+            pos_scores_vae = torch.sum(batch_user_z*pos_u_emb_ori, dim=1) #(bs)
+            neg_scores_vae = torch.sum(batch_user_z*neg_u_emb_ori, dim=1)
             vae_cl_loss = torch.mean(nn.functional.softplus(neg_scores_vae - pos_scores_vae))
-            # recon_loss = vae_cl_loss # v3, 效果不佳;
             # vae_cl_loss = 0.
 
             vae_total_loss = recon_w * recon_loss + kl_w * kl_loss + vae_cl_w * vae_cl_loss
             loss += vae_total_loss
             # pdb.set_trace()
-
-            if add_vae_on_GNN:
-                # 添加两个vae的KL散度;
-                batch_user_mu_v2, batch_user_var_v2 = self.user_mu_v2[pos_u_list.long()], self.user_var_v2[pos_u_list.long()]
-
-                # kl_loss_v2 = torch.mean(torch.sum(torch.log(batch_user_var/batch_user_var_v2) + (batch_user_var_v2 ** 2 + (batch_user_mu_v2 - batch_user_mu)**2)/(2*batch_user_var**2), dim=1))
-                tmp = 0.5 *  torch.sum(batch_user_var - batch_user_var_v2 + (batch_user_var_v2.exp() + (batch_user_mu_v2 - batch_user_mu)**2)/batch_user_var.exp() - 1., dim=1)
-                kl_loss_v2 = torch.mean(tmp)
-                recon_loss = kl_loss_v2
-                # pdb.set_trace()
-                loss += 2.0 * recon_loss
         
         # cl loss is valid;
         cl_loss = 0.
@@ -959,11 +1001,10 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                                                                     batch_pos_user_ats,
                                                                     batch_neg_user_ats, 
                                                                     model_name=model_name,
-                                                                    add_uat=True,
+                                                                    add_uat=False,
                                                                     add_vae_loss=self.add_vae,
                                                                     add_side_info=False,
-                                                                    add_vae_loss_v2=False,
-                                                                    add_vae_on_GNN=False,
+                                                                    add_vae_loss_v2=True,
                                                                     vae_merge_side_info=False)
             elif model_name == "mlp":
                 loss, reg_loss, cl_loss = self.bpr_loss_bipartite(batch_custormer,
@@ -986,19 +1027,15 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             reg_loss = reg_loss*self.weight_decay
             loss = loss + reg_loss
 
-            # if epoch < 20:
-            #     loss = reg_loss + rec_loss + cl_loss
-            #     self.optimizer.zero_grad()
-            #     loss.backward(retain_graph=True)
-            #     self.optimizer.step()
-            # else:
-            #     self.optimizer_joint.zero_grad()
-            #     loss.backward(retain_graph=True)
-            #     self.optimizer_joint.step()
-
-            self.optimizer.zero_grad()
-            loss.backward(retain_graph=True)
-            self.optimizer.step()
+            if epoch < 10:
+                loss = reg_loss + rec_loss + cl_loss
+                self.optimizer.zero_grad()
+                loss.backward(retain_graph=True)
+                self.optimizer.step()
+            else:
+                self.optimizer_joint.zero_grad()
+                loss.backward(retain_graph=True)
+                self.optimizer_joint.step()
             
             loss_cpu = loss.cpu().item()
             aver_loss += loss_cpu
@@ -1027,9 +1064,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
     def save_embeddings(self, save_model_name="disengcn", use_vae=True):
         self.forward_embeddings(save_model_name=save_model_name, use_vae=use_vae, is_save=True)
         
-    def forward_embeddings(self, save_model_name="disengcn", use_vae=False, is_add_uat=False, 
-                                add_side_info=False, vae_merge_side_info=False,
-                                add_vae_on_GNN=False):
+    def forward_embeddings(self, save_model_name="disengcn", use_vae=False, is_add_uat=False, add_side_info=False, vae_merge_side_info=False):
         """
         save user embeddings and item embeddings
         """
@@ -1064,32 +1099,23 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                 # add user-at lightgcn
                 input_second_all_emb = torch.cat([all_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
                 output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
-                user_mu =  output_second_all_emb[:self.user_voc_len]
-            else:
-                user_mu = user_embeddings
+                user_embeddings =  output_second_all_emb[:self.user_voc_len]
+
             
             #冷启动用户与老用户的表征设置不同;
-            # batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
-            # user_self_feature = self.feat_interaction(batch_user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1)
-            # # if self.cold_user_emb.sum() == 0.:
-            # user_mu, user_var = self.user_vae.Q(user_self_feature)
-            # # user_z = self.user_vae.sample_z(user_mu, user_var) # ID features of cold users;
-            # # self.cold_user_emb.data = user_z.clone().detach()
-            # # self.cold_user_emb.data = user_mu.clone().detach()
-            # # else:
-            # #     # user_z = self.cold_user_emb
-            # #     user_mu = self.cold_user_emb
-            # #     pdb.set_trace()
-            # # pdb.set_trace()
-            # # 是否在user embedding基础上添加side information;
-
-            if add_vae_on_GNN:
-                self.user_mu_v2, self.user_var_v2 = self.user_vae_v2.Q(user_embeddings)
-                # self.user_z_v2 = self.user_vae_v2.sample_z(self.user_mu_v2, self.user_var_v2)
-                user_embeddings = self.user_mu_v2
-                # pdb.set_trace()
-
-
+            batch_user_attri_emb = self.user_attri_emb #(u_voc, 7, dim)
+            user_self_feature = self.feat_interaction(batch_user_attri_emb, self.dense_user_self_biinter, self.dense_user_onehop_siinter, dimension=1)
+            # if self.cold_user_emb.sum() == 0.:
+            user_mu, user_var = self.user_vae.Q(user_self_feature)
+            # user_z = self.user_vae.sample_z(user_mu, user_var) # ID features of cold users;
+            # self.cold_user_emb.data = user_z.clone().detach()
+            # self.cold_user_emb.data = user_mu.clone().detach()
+            # else:
+            #     # user_z = self.cold_user_emb
+            #     user_mu = self.cold_user_emb
+            #     pdb.set_trace()
+            # pdb.set_trace()
+            # 是否在user embedding基础上添加side information;
             if add_side_info:
                 # user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, user_z)
                 user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, user_mu)
@@ -1099,8 +1125,6 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                 # user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, user_z)
                 # pdb.set_trace()
                 # user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, (user_z + user_embeddings)/2.)
-                # old_user_embeddings_mean = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, self.mask_tensor)
-                # old_user_embeddings_mean = old_user_embeddings_mean.sum(0)/torch.sum(self.multi_hot_label)
                 user_embeddings = torch.where(torch.transpose(self.multi_hot_label, 0, 1)>0, user_embeddings, user_mu)
             
 

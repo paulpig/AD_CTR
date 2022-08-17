@@ -106,78 +106,14 @@ if __name__ == '__main__':
                                     learning_rate=params['learning_rate'], graph_embedding_dim=params['graph_embedding_dim'],
                                     bpr_batch_size=params['bpr_batch_size'], weight_decay=params['weight_decay'], epoch_pre=params['epoch_pre'],
                                     iterations=params['iterations'], add_norm=params['add_norm'], channels=params['channels'],cl_w=params['cl_w'],
-                                    add_vae=params['add_vae'])
-    # model = model_class(feature_map, **params)
-    # print number of parameters used in model
+                                    add_vae=params['add_vae'], learning_rate_vae=params["learning_rate_vae"])
+    
     model_pre.count_parameters()
     # fit the model
-    # model.fit_generator(train_gen, validation_data=valid_gen, **params)
-    # model.train_model(add_cl=False, model_name="disengcn")
     model_pre.train_model(add_cl=False, model_name=encoder_model_pre)
-    # model.train_model(add_cl=False, model_name="lightgcn")
-    # model.train_model(add_cl=True, model_name="disengcn")
-    # pdb.set_trace()
+    
     # save user embedding
     print("start saving user embeddings.")
-    # model.save_embeddings(save_model_name="disengcn")
-    # model.save_embeddings(save_model_name=encoder_model_pre)
-
-    # load user embeddings
-    # 对齐用户表征, model_pre.userAt2id
-    
-    # feature_encoder.encoders
-    # feature_encoder.feature_map.feature_specs
-
-    # with open(os.path.join(data_dir, 'user2id.h5'), 'rb') as r_f:
-    #     user2id_dict = pickle.load(r_f)
-    
-    # user_str_id_tuple = sorted(tuple(user2id_dict.items()), key=lambda item: item[1])
-    # pre_user_dic = dict([ (item[0].strip().split("_")[1], item[1]) for item in model_pre.userAt2id.items()])
-    # pre_user_val = set([item[1] for item in model_pre.userAt2id.items()])
-    # pre_user_dic['__OOV__'] = 0
-    # reindex_user_ids = []
-    # non_occur_count = max(pre_user_val) + 1
-
-    # for user_str, user_id in user_str_id_tuple:
-    #     if user_str == "__PAD__":
-    #         continue
-    #     if user_str in pre_user_dic:
-    #         reindex_user_ids.append(pre_user_dic[user_str])
-    #     else:
-    #         # no_u_at_key[non_occur_count]
-    #         reindex_user_ids.append(non_occur_count)
-    #         non_occur_count += 1
-
-    # pdb.set_trace()
-    # uuuu = feature_encoder.encoders['userid_tokenizer']
-    
-
-    # with open(os.path.join(data_dir, 'customer2id.h5'), 'rb') as r_f:
-    #     customer2id_dict = pickle.load(r_f)
-    
-    # customer_str_id_tuple = sorted(tuple(customer2id_dict.items()), key=lambda item: item[1])
-    # pre_customer_dic = dict([ (item[0].strip().split("_")[1], item[1]) for item in model_pre.customer2id.items()])
-    # pre_customer_val = set([item[1] for item in model_pre.customer2id.items()])
-    # pre_customer_dic['__OOV__'] = 0
-    # reindex_customer_ids = []
-    # non_occur_count = max(pre_customer_val) + 1
-
-    # for c_str, c_id in customer_str_id_tuple:
-    #     if c_str == "__PAD__":
-    #         continue
-    #     if c_str in pre_customer_dic:
-    #         reindex_customer_ids.append(pre_customer_dic[c_str])
-    #     else:
-    #         # no_u_at_key[non_occur_count]
-    #         reindex_customer_ids.append(non_occur_count)
-    #         non_occur_count += 1
-    
-    # pdb.set_trace()
-    # convert embeddings
-
-    # finetuning; 
-    # test: feature_encoder.encoders['userid_tokenizer']
-    # pdb.set_trace()
     # get train and validation data
     train_gen, valid_gen = datasets.h5_generator(feature_map, stage='train', **params)
     # initialize model
@@ -208,14 +144,6 @@ if __name__ == '__main__':
 
     # get evaluation results on validation
     logging.info('****** Validation evaluation ******')
-    
-    # model_pre = model.reload_pretrain_model()
-    # model_pre.forward_embeddings(save_model_name=encoder_model_pre)
-    # # model.embedding_layer.embedding_layer['userid_cp'] = model_pre.user_embeddings[reindex_user_ids]
-    # model.embedding_layer.other_emb_layer = model_pre.user_embeddings[reindex_user_ids]
-    # pdb.set_trace()
-    # model.embedding_layer.embedding_layer["userid"].weight =  torch.nn.Parameter(model_pre.user_embeddings[reindex_user_ids])
-
 
     valid_result = model.evaluate_generator(valid_gen)
     del train_gen, valid_gen
@@ -223,11 +151,7 @@ if __name__ == '__main__':
 
     # get evaluation results on test
     logging.info('******** Test evaluation ********')
-    # model_pre = model.reload_pretrain_model()
-    # model_pre.forward_embeddings(save_model_name=encoder_model_pre)
-    # # model.embedding_layer.embedding_layer['userid_cp'] = model_pre.user_embeddings[reindex_user_ids]
-    # model.embedding_layer.other_emb_layer = model_pre.user_embeddings[reindex_user_ids]
-    # model.embedding_layer.embedding_layer["userid"].weight =  torch.nn.Parameter(model_pre.user_embeddings[reindex_user_ids])
+
 
     test_gen = datasets.h5_generator(feature_map, stage='test', **params)
     if test_gen:
