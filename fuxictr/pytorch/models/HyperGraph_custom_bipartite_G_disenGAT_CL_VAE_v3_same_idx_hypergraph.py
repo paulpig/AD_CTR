@@ -612,7 +612,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             pos_uat_scores= torch.sum(customer_emb*pos_u_at_emb, dim=1) #(bs)
             neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
             loss_uat = torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
-            # loss += 1.0*loss_uat
+            # loss += 1.0*loss_uat ddd
             
             # add cl loss;
             loss_cl_uat = loss_cl_uat_w * self.loss_contrastive_triple(pos_u_at_emb, pos_u_emb, add_local=True, add_global=True, cl_type="user", all_embedding=output_second_user_emb)
