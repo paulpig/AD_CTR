@@ -1,0 +1,944 @@
+taobao_x1_base:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/Taobao_x1/train.csv
+    valid_data: ../data/Taobao/Taobao_x1/test.csv
+    # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+    test_data: ../data/Taobao/Taobao_x1/test.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+          pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+         {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+                "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                active: True, dtype: str, type: categorical}]
+    label_col: {name: clk, dtype: float}
+
+# taobao_x1_seq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_seq_true:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "price", active: False, dtype: float, type: numeric},
+#          {name: "new_user_class_level", active: False, dtype: str, type: categorical},
+#          {name: "hour", active: True, dtype: str, type: categorical, preprocess: convert_hour},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 64, padding: pre,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_seq_true_rm_short:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train_sub_norm_rm_short.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test_sub_norm_rm_short.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test_sub_norm_rm_short.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "price", active: False, dtype: float, type: numeric},
+#          {name: "new_user_class_level", active: False, dtype: str, type: categorical},
+#          {name: "hour", active: True, dtype: str, type: categorical, preprocess: convert_hour},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 64, padding: pre,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+# taobao_x1_seq_true_no_share:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "price", active: False, dtype: float, type: numeric},
+#          {name: "new_user_class_level", active: False, dtype: str, type: categorical},
+#          {name: "hour", active: True, dtype: str, type: categorical, preprocess: convert_hour},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 64, padding: pre,
+#           encoder: null}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_no_seq_true:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "price", active: False, dtype: float, type: numeric},
+#          {name: "new_user_class_level", active: False, dtype: str, type: categorical},
+#          {name: "hour", active: True, dtype: str, type: categorical, preprocess: convert_hour},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 64, padding: pre,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+  
+# taobao_x1_sub_seq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_seq_rm_self:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_rm_self_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_seq_rm_self_rm_non_freq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub_norm_rm_short.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub_norm_rm_short.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub_norm_rm_short.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 64,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_no_sub_seq_rm_self_rm_non_freq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub_norm_rm_short.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub_norm_rm_short.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub_norm_rm_short.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 64,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+
+# taobao_x1_all_sub_seq_rm_self_rm_non_freq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_all_norm_rm_short.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_all_norm_rm_short.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_all_norm_rm_short.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 64,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_no_all_seq_rm_self_rm_non_freq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_all_norm_rm_short.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_all_norm_rm_short.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_all_norm_rm_short.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 64,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# # 常规DIN模型, 应用部分子集上;
+# taobao_x1_sub_seq_norm:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub_norm.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub_norm.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub_norm.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# # 常规DIN模型, 应用部分子集上, 添加cate;
+# taobao_x1_sub_seq_norm_add_cate:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub_norm_add_cate.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub_norm_add_cate.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub_norm_add_cate.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"},
+#          {name: "click_cate_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "cate_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_no_seq_rm_self:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_rm_self_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_no_seq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_seq_add_cate:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_cate.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_cate.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_cate.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"},
+#           {name: "click_cate_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "cate_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_no_seq:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/Taobao_x1/train.csv
+#     valid_data: ../data/Taobao/Taobao_x1/test.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/Taobao_x1/test.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+# taobao_x1_both_seqs:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"},
+#           {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_both_seqs_rm_self:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_rm_self_sub.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_rm_self_sub.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "adgroup_id"},
+#           {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 128,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+taobao_x1_sub_seq_only_user:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+    # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+    min_categr_count: 10
+    feature_cols:
+        [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical},
+         {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+          encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_no_sub_seq_only_user_min_1:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_seq_only_user_min_1:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_min_1_pretrain:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_test.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_min_1_pretrain_total:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_min_1_pretrain_total_epoch_20:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_epoch_20.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_min_10_pretrain_total_epoch_20_add_norm:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_add_norm.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+# taobao_x1_sub_seq_only_user_min_10_pretrain_total_epoch_20_lightgcn_right_mat:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_min_1_pretrain_total_epoch_20_add_norm:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_add_norm.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+# taobao_x1_sub_seq_only_user_min_1_pretrain_output_total_epoch_20:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_seq_only_user_load_user_pretrain:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_test.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                 active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_seq_only_user_500:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 500,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_seq_no_user:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     # valid_data: ../data/Taobao/Taobao_x1/valid_sample.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [{name: ["userid","adgroup_id","pid","cate_id","campaign_id","customer","brand","cms_segid",
+#                  "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# # 开始迭代
+# taobao_x1_sub_base_only_user_min_10_baseline:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#         #  {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#         #   pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+#          {name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+taobao_x1_sub_base_only_user_min_1_baseline:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    min_categr_count: 1
+    feature_cols:
+        [
+        #  {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+        #   pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+         {name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical},
+         {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+          encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+taobao_x1_sub_base_only_user_min_1_baseline_new:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true_add_his_clk.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    min_categr_count: 1
+    feature_cols:
+        [
+        #  {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+        #   pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+         {name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical},
+         {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+          encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+
+# taobao_x1_sub_base_only_user_min_10_add_ext_data:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_add_ext_pos.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_add_ext_pos.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_add_ext_pos.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#         #  {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#         #   pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+#          {name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#         #  {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#         #   pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num.h5", freeze_emb: False},
+#          {name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num_top100_ad_user_true.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num_top30_customer_user_true.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_only_pos:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+
+
+taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true_add_his_clk.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+          pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+         {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation", "his_clk"], 
+                 active: True, dtype: str, type: categorical}]
+        #  {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+        #   encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_his_clk_tmp:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true_add_his_clk.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_add_his_clk.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+          pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+         {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation", "his_clk"], 
+                 active: True, dtype: str, type: categorical}]
+        #  {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+        #   encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+
+taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+          pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+         {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical}]
+        #  {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+        #   encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical}]
+    label_col: {name: clk, dtype: float}
+
+
+taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_extend_users:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+          pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+         {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical}]
+        #  {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+        #   encoder: null, share_embedding: "userid"}]
+    label_col: {name: clk, dtype: float}
+
+
+
+
+# taobao_x1_sub_base_only_user_min_1_pretrain_custom_user_only_pos_no_pretrain_1_day:
+taobao_x1_1_day_custom_user_only_pos_graph:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true_1_day.csv
+    valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_1_day.csv
+    test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true_1_day.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: ["userid", "adgroup_id","pid","cate_id","campaign_id","customer","brand",
+        "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+                 active: True, dtype: str, type: categorical}]
+    label_col: {name: clk, dtype: float}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num_top30_customer_user_true_bipartile_disen_cl_ui.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb_pos_only:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 10
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num_top30_customer_user_true_bipartile_disen_cl_ui_only_pos.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_base_only_user_min_1_attention_mechanism_pretrain_custom_user_generate_pretrain_emb_pos_only:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/user_emb_hypergraph_dim10_final_output_epoch_20_ori_num_top30_customer_user_true_bipartile_disen_cl_ui_only_pos.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: False, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
+
+
+# taobao_x1_sub_base_only_user_min_10_attention_mechanism_pretrain_custom_user_generate_pretrain_emb_pos_only_extend_users:
+#     data_root: ../data/
+#     data_format: csv
+#     train_data: ../data/Taobao/taobao_ori/train_norm_only_user_true.csv
+#     valid_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     test_data: ../data/Taobao/taobao_ori/test_norm_only_user_true.csv
+#     min_categr_count: 1
+#     feature_cols:
+#         [
+#          {name: "userid", active: True, dtype: str, type: categorical, embedding_dim: 10,
+#           pretrained_emb: "../data/Taobao/taobao_ori/first_hop_c_u_mat_norm_topk_only_pos_output.h5", freeze_emb: False},
+#          {name: ["adgroup_id","pid","cate_id","campaign_id","customer","brand",
+#         "cms_segid", "cms_group_id","final_gender_code","age_level","pvalue_level","shopping_level","occupation"], 
+#                  active: True, dtype: str, type: categorical},
+#          {name: "click_user_sequence", active: True, dtype: str, type: sequence, splitter: "^", max_len: 200,
+#           encoder: null, share_embedding: "userid"}]
+#     label_col: {name: clk, dtype: float}
