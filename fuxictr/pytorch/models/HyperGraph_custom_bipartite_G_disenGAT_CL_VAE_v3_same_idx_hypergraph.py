@@ -499,11 +499,13 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             
             if add_uat:
                 # 添加随机dropout方法来模拟冷启动过程;
-                # mask_ratio = 0.2
-                mask_ratio = 0.4
-                mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
+                mask_ratio = 0.2
+                # mask_ratio = 0.4
+                # mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
+                mask = self.random_mask.bernoulli_(1 - mask_ratio).bool()
                 # origin_emb = self.embedding_user.weight / (self.layers + 1)
-                origin_emb = self.embedding_user.weight
+                # origin_emb = self.embedding_user.weight
+                origin_emb = self.mask_tensor
                 dropout_user_emb = torch.where(torch.transpose(mask, 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
                 # add user-at lightgcn
                 input_second_all_emb = torch.cat([dropout_user_emb, self.embedding_u_at.weight], dim=0)
