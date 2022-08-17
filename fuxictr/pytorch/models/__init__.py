@@ -1,10 +1,3 @@
-'''
-Author: your Name
-Date: 2022-08-17 22:57:42
-LastEditors: your Name
-LastEditTime: 2022-08-17 23:34:45
-Description: 
-'''
 from .base_model import BaseModel
 from .LR import LR
 from .FM import FM
@@ -69,3 +62,4 @@ from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_ctr_obj import HyperGraph
 from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_same_idx import HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx
 from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_same_idx_hypergraph import HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph
 # from .HyperGraph_custom_bipartite_G_disenGAT_CL_VAE_v3_same_idx_hypergraph_8_17_best import HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph
+
