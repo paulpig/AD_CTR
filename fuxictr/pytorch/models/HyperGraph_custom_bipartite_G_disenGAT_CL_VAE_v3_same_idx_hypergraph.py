@@ -106,7 +106,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         self.weight_lightgcn = nn.Parameter(torch.empty(size=(self.emb_size,  self.emb_size), dtype=torch.float), requires_grad=True)
         self.bias_lightgcn = nn.Parameter(torch.empty(size=(1, self.emb_size), dtype=torch.float), requires_grad=True)
 
-        self.random_mask = torch.empty(size=(1, self.user_voc_len)).to(self.device)
+        
 
         # ===============================user-attributes========================================
         # with open('../data/Taobao/taobao_ori/u2_uat_list_new_idx.pk', "rb") as f: #与CTR模型编码一致;
@@ -138,15 +138,18 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
 
         # ==================================another vae for user================
         self.user_vae_v2 = VAE(self.user_at_dim, device=self.device)
-
+        self.embedding_cold_user = nn.Embedding(self.user_voc_len, self.emb_size)
 
         # =======================================
         self.optimizer = torch.optim.Adam([{"params":  self.embedding_user.parameters()}, 
                                             {"params": self.embedding_item.parameters()},
                                             {"params": self.weight_lightgcn},
-                                            {"params": self.bias_lightgcn},
-                                            {"params": self.embedding_u_at.parameters()}], lr=learning_rate)
+                                            {"params": self.bias_lightgcn}], lr=learning_rate)
         
+        self.optimizer_uat = torch.optim.Adam([{"params": self.embedding_u_at.parameters()},
+                                               {"params": self.embedding_cold_user.parameters()}], lr=learning_rate)
+
+
         emb_attri_param = []
         only_vae = False
         if only_vae == True:
@@ -172,7 +175,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         self.user_attri_emb = self.get_user_ats_for_train(device=self.device)
         self.add_mlp = False
         self.add_vae = add_vae
-        self.mask_tensor = torch.zeros(self.user_voc_len, self.emb_size).to(self.device)
+        # self.mask_tensor = torch.zeros(self.user_voc_len, self.emb_size).to(self.device)
         # self.cold_user_emb = nn.Parameter(torch.zeros(size=(self.user_voc_len, self.emb_size), dtype=torch.float), requires_grad=True)
         # self.cold_user_emb = nn.Embedding(self.user_voc_len, self.emb_size)
         # self.first_forward_flag = False
@@ -449,7 +452,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         if add_mlp == False:
             item_embeddings = embedding
         else:
-            item_embeddings = torch.matmul(embedding, self.weight_lightgcn) + self.bias_lightgcn #每层的参数设置不同吗?
+            item_embeddings = torch.matmul(embedding, self.weight_lightgcn_uat) + self.bias_lightgcn_uat #每层的参数设置不同吗?
 
         final = [item_embeddings]
         for i in range(self.layers):
@@ -499,14 +502,24 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             
             if add_uat:
                 # 添加随机dropout方法来模拟冷启动过程;
-                mask_ratio = 0.2
+                # mask_ratio = 0.2
                 # mask_ratio = 0.4
+                mask_ratio = 0.4
+                # mask_ratio = 1.0
                 # mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
-                mask = self.random_mask.bernoulli_(1 - mask_ratio).bool()
+                random_mask = torch.empty(size=(1, len(pos_u_list))).to(self.device)
+                mask = random_mask.bernoulli_(1 - mask_ratio).bool()
                 # origin_emb = self.embedding_user.weight / (self.layers + 1)
                 # origin_emb = self.embedding_user.weight
-                origin_emb = self.mask_tensor
-                dropout_user_emb = torch.where(torch.transpose(mask, 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
+                # pdb.set_trace()
+                # origin_emb = self.mask_tensor
+                origin_emb = self.embedding_cold_user.weight
+                # dropout_user_emb = torch.where(torch.transpose(mask, 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
+                dropout_user_emb = torch.where(torch.transpose(self.multi_hot_label.bool(), 0, 1)>0, self.all_user_embeddings[:self.user_voc_len], origin_emb)
+                
+                dropout_user_emb[pos_u_list.long()] = torch.where(torch.transpose(mask, 0, 1)>0, dropout_user_emb[pos_u_list.long()], origin_emb[pos_u_list.long()])
+                
+                # pdb.set_trace()
                 # add user-at lightgcn
                 input_second_all_emb = torch.cat([dropout_user_emb, self.embedding_u_at.weight], dim=0)
                 # input_second_all_emb = torch.cat([self.all_user_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
@@ -604,18 +617,33 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
         recon_loss, kl_loss, vae_cl_loss = loss, loss, loss
         
         if add_uat:
-            # loss_cl_uat_w = 1.e-4
-            loss_cl_uat_w = 2.e-4
+            # loss_cl_uat_w = 2.e-4
+            # loss_cl_uat_w = 2.e-4
+            loss_cl_uat_w = 1.
+            # loss_cl_uat_w = 2.e-4
             vae_cl_w = 1.0
             pos_u_at_emb = output_second_user_emb[pos_u_list.long()]
             neg_u_at_emb = output_second_user_emb[neg_u_list.long()]
-            pos_uat_scores= torch.sum(customer_emb*pos_u_at_emb, dim=1) #(bs)
-            neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
-            loss_uat = torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
+            # loss_uat = torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
             # loss += 1.0*loss_uat ddd
             
+            # pdb.set_trace()
             # add cl loss;
-            loss_cl_uat = loss_cl_uat_w * self.loss_contrastive_triple(pos_u_at_emb, pos_u_emb, add_local=True, add_global=True, cl_type="user", all_embedding=output_second_user_emb)
+            # v1: 整个batch内的用户构建loss;
+            # loss_cl_uat = loss_cl_uat_w * self.loss_contrastive_triple(pos_u_at_emb, pos_u_emb, add_local=True, add_global=False, cl_type="user", all_embedding=output_second_user_emb)
+            # v2: batch中masked tokens构建loss; TODO
+
+            # v3: BCE loss; on user level;
+            # pos_uat_scores= torch.sum(pos_u_emb*pos_u_at_emb, dim=1) #(bs)
+            # neg_uat_scores= torch.sum(neg_u_emb*pos_u_at_emb, dim=1)
+            # loss_cl_uat = loss_cl_uat_w * torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
+
+            # v4: BCE loss; on user-item level; 效果最好;
+            pos_uat_scores= torch.sum(customer_emb*pos_u_at_emb, dim=1) #(bs)
+            neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
+            loss_cl_uat = loss_cl_uat_w * torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
+
+
             vae_cl_loss = loss_cl_uat
             loss += loss_cl_uat
             # pdb.set_trace()
@@ -1002,8 +1030,13 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             #     self.optimizer_joint.step()
 
             self.optimizer.zero_grad()
-            loss.backward(retain_graph=True)
+            # loss.backward(retain_graph=True)
+            (reg_loss + rec_loss + cl_loss).backward(retain_graph=True)
             self.optimizer.step()
+
+            self.optimizer_uat.zero_grad()
+            vae_cl_loss.backward(retain_graph=True)
+            self.optimizer_uat.step()
             
             loss_cpu = loss.cpu().item()
             aver_loss += loss_cpu
@@ -1067,7 +1100,9 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             
             if is_add_uat:
                 # add user-at lightgcn
-                input_second_all_emb = torch.cat([all_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
+                # input_second_all_emb = torch.cat([all_embeddings[:self.user_voc_len], self.embedding_u_at.weight], dim=0)
+                # pdb.set_trace()
+                input_second_all_emb = torch.cat([self.embedding_cold_user.weight, self.embedding_u_at.weight], dim=0)
                 output_second_all_emb = self.computer_u_at(self.Graph_u_at, input_second_all_emb, add_mlp=self.add_mlp)
                 user_mu =  output_second_all_emb[:self.user_voc_len]
             else:
