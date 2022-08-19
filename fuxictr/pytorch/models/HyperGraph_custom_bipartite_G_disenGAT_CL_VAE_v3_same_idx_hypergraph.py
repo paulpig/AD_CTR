@@ -504,7 +504,8 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
                 # 添加随机dropout方法来模拟冷启动过程;
                 # mask_ratio = 0.2
                 # mask_ratio = 0.4
-                mask_ratio = 0.4
+                # mask_ratio = 0.4
+                mask_ratio = 0.6
                 # mask_ratio = 1.0
                 # mask = self.random_mask.bernoulli_(1 - mask_ratio).bool() & self.multi_hot_label.bool()
                 random_mask = torch.empty(size=(1, len(pos_u_list))).to(self.device)
@@ -643,6 +644,7 @@ class HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph(nn.Module):
             neg_uat_scores= torch.sum(customer_emb*neg_u_at_emb, dim=1)
             loss_cl_uat = loss_cl_uat_w * torch.mean(nn.functional.softplus(neg_uat_scores - pos_uat_scores))
 
+            # 
 
             vae_cl_loss = loss_cl_uat
             loss += loss_cl_uat
