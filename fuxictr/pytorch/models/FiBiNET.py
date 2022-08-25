@@ -63,7 +63,6 @@ class FiBiNET(BaseModel):
         self.output_activation = self.get_output_activation(task)
         self.compile(kwargs["optimizer"], loss=kwargs["loss"], lr=learning_rate)
         self.reset_parameters()
-        # pdb.set_trace()
         self.model_to_device()
 
     def forward(self, inputs):

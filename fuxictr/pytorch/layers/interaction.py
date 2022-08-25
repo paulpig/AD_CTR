@@ -18,6 +18,7 @@ import torch
 from torch import nn
 from itertools import combinations
 from ..torch_utils import get_activation
+import pdb
 
 
 class InnerProductLayer(nn.Module):
@@ -39,7 +40,7 @@ class InnerProductLayer(nn.Module):
             self.field_p = nn.Parameter(torch.LongTensor(p), requires_grad=False)
             self.field_q = nn.Parameter(torch.LongTensor(q), requires_grad=False)
             self.interaction_units = int(num_fields * (num_fields - 1) / 2)
-            self.upper_triange_mask = nn.Parameter(torch.triu(torch.ones(num_fields, num_fields), 1).type(torch.ByteTensor),
+            self.upper_triange_mask = nn.Parameter(torch.triu(torch.ones(num_fields, num_fields), 1).type(torch.bool),
                                                    requires_grad=False)
 
     def forward(self, feature_emb):
@@ -57,6 +58,7 @@ class InnerProductLayer(nn.Module):
             return emb1 * emb2
         elif self._output_type == "inner_product":
             inner_product_matrix = torch.bmm(feature_emb, feature_emb.transpose(1, 2))
+            # pdb.set_trace()
             flat_upper_triange = torch.masked_select(inner_product_matrix, self.upper_triange_mask)
             return flat_upper_triange.view(-1, self.interaction_units)
 

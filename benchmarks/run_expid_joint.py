@@ -97,7 +97,8 @@ if __name__ == '__main__':
     # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3"
     # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObj"
     # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdx"
-    model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph"
+    # model_id_pretrain = "HyperGraphCustomBipartiteDisenGATVAEV3CTRObjSameIdxHyperGraph"
+    model_id_pretrain = "LightGCNCLHuaWei"
     
     encoder_model_pre = params['encoder_model']
     # model_class = getattr(models, 'HyperGraph')
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     model_pre.count_parameters()
     # fit the model
     model_pre.train_model(add_cl=False, model_name=encoder_model_pre)
-    
+    pdb.set_trace()
     # save user embedding
     print("start saving user embeddings.")
     # get train and validation data

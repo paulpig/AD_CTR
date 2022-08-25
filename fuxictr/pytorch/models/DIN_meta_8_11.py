@@ -109,6 +109,7 @@ class DIN_Meta_JOINT(BaseModel):
         #                         use_bias=True)
         # else:
         self.dnn_ori = MLP_Layer(input_dim=(feature_map.num_fields + 2)* embedding_dim,
+        # self.dnn_ori = MLP_Layer(input_dim=(feature_map.num_fields)* embedding_dim,
                             output_dim=1,
                             hidden_units=dnn_hidden_units,
                             hidden_activations=dnn_activations,
@@ -287,14 +288,16 @@ class DIN_Meta_JOINT(BaseModel):
 
         # if self.use_meta and self.use_pretrain:
         # add pretrain user emb
-        feature_spec = self.embedding_layer._feature_map.feature_specs['userid']
+        # feature_spec = self.embedding_layer._feature_map.feature_specs['userid']
+        feature_spec = self.embedding_layer._feature_map.feature_specs['uid']
         inp = X[:, feature_spec["index"]].long()
         # user_embedding_ori = self.embedding_layer.embedding_layer['userid'](inp)
         # user_embedding_hypergraph = self.embedding_layer.embedding_layer['userid_cp'](inp) #消融实验;
         user_embedding_hypergraph = self.embedding_layer.other_user_emb_layer[inp] #消融实验;
         # user_embedding_hypergraph = self.embedding_layer.embedding_layer['userid'](inp)
 
-        feature_spec = self.embedding_layer._feature_map.feature_specs['customer']
+        # feature_spec = self.embedding_layer._feature_map.feature_specs['customer']
+        feature_spec = self.embedding_layer._feature_map.feature_specs['adv_prim_id']
         inp = X[:, feature_spec["index"]].long()
         customer_embedding_hypergraph = self.embedding_layer.other_customer_emb_layer[inp] #消融实验;
 
@@ -315,6 +318,9 @@ class DIN_Meta_JOINT(BaseModel):
 
         convert_customer_emb_hyper = self.pretrain_c_emb_mlp(customer_embedding_hypergraph)
         feature_emb_dict['c_hyper_emb'] = convert_customer_emb_hyper
+
+
+
         # user_embedding_hypergraph = self.pretrain_mlp_freeze(user_embedding_hypergraph)
         # # add hypergraph emb
         # feature_emb_dict["hyper_emb"] = user_embedding_hypergraph

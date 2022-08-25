@@ -842,7 +842,20 @@ taobao_x1_1_day_custom_user_only_pos_graph:
 
 
 
-
+huawei_x1_1_day_custom_user_only_pos_graph:
+    data_root: ../data/
+    data_format: csv
+    train_data: ../data/huawei/train_norm_only_user_true_1_day.csv
+    valid_data: ../data/huawei/test_norm_only_user_true_1_day.csv
+    test_data: ../data/huawei/test_norm_only_user_true_1_day.csv
+    min_categr_count: 1
+    feature_cols:
+        [{name: ['uid', 'task_id', 'adv_id', 'creat_type_cd', 'adv_prim_id', 'dev_id', 'inter_type_cd', 'slot_id', 'spread_app_id', 'tags',
+                'app_first_class', 'app_second_class', 'age', 'city', 'city_rank', 'device_name', 'device_size', 'career', 'gender', 'net_type',
+                'residence', 'his_app_size', 'his_on_shelf_time', 'app_score', 'emui_dev', 'list_time', 'device_price', 'up_life_duration',
+                'up_membership_grade', 'membership_life_duration', 'consume_purchase', 'communication_avgonline_30d', 'indu_name', 'pt_d'], 
+                 active: True, dtype: str, type: categorical}]
+    label_col: {name: label, dtype: float}
 
 
 

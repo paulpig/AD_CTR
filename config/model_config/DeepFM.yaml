@@ -19,3 +19,27 @@ DeepFM_base:
     seed: 2019
     monitor: {'AUC': 1, 'logloss': -1}
     monitor_mode: 'max'
+
+
+
+DeepFM_taobao_baselines:
+    model: DeepFM
+    dataset_id: taobao_x1_1_day_custom_user_only_pos_graph
+    loss: 'binary_crossentropy'
+    metrics: ['logloss', 'AUC']
+    task: binary_classification
+    optimizer: adam
+    hidden_units: [256, 128, 64]
+    hidden_activations: relu
+    net_regularizer: 1.0e-5
+    embedding_regularizer: 1.0e-5
+    learning_rate: 1.e-3
+    batch_norm: False
+    net_dropout: 0
+    batch_size: 10000
+    embedding_dim: 10
+    epochs: 100
+    shuffle: True
+    seed: 2019
+    monitor: {'AUC': 1, 'logloss': -1}
+    monitor_mode: 'max'

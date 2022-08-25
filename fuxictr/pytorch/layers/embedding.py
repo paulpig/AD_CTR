@@ -30,7 +30,7 @@ class EmbeddingLayer(nn.Module):
     def __init__(self, 
                  feature_map,
                  embedding_dim,
-                 use_pretrain=True,
+                 use_pretrain=False,
                  required_feature_columns=[],
                  not_required_feature_columns=[]):
         super(EmbeddingLayer, self).__init__()
@@ -50,7 +50,8 @@ class EmbeddingDictLayer(nn.Module):
     def __init__(self, 
                  feature_map, 
                  embedding_dim, 
-                 use_pretrain=True,
+                #  use_pretrain=True,
+                 use_pretrain=False,
                  required_feature_columns=[],
                  not_required_feature_columns=[]):
         super(EmbeddingDictLayer, self).__init__()

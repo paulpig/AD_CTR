@@ -21,6 +21,7 @@ FiBiNET_base:
     seed: 2019
     monitor: {'AUC': 1, 'logloss': -1}
     monitor_mode: 'max'
+
 FiBiNET_avazu_x4:
     batch_norm: false
     batch_size: 10000
